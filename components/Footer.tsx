@@ -5,9 +5,21 @@ import { motion } from "framer-motion";
 
 export default function Footer() {
   const socialLinks = [
-    { icon: <FiGithub size={18} />, url: "#", label: "GitHub" },
-    { icon: <FiLinkedin size={18} />, url: "#", label: "LinkedIn" },
-    { icon: <FiTwitter size={18} />, url: "#", label: "Twitter" },
+    {
+      icon: <FiGithub size={18} />,
+      url: "https://github.com/rx7iiim",
+      label: "GitHub",
+    },
+    {
+      icon: <FiLinkedin size={18} />,
+      url: "https://www.linkedin.com/in/abderrahim-zine-b2b511329/",
+      label: "LinkedIn",
+    },
+    {
+      icon: <FiTwitter size={18} />,
+      url: "https://x.com/Abderrahim14431",
+      label: "Twitter",
+    },
     { icon: <FiMail size={18} />, url: "#", label: "Email" },
   ];
   const [activeTab, setActiveTab] = useState<"about" | "work" | "contact">(
