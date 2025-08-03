@@ -17,24 +17,13 @@ import Contact from "./Contact";
 import { TypingQuote } from "./quote";
 
 export default function HeroContent() {
-  const [activeTab, setActiveTab] = useState<"about" | "work" | "contact">(
-    "about"
-  );
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  const executeCommand = (command: string) => {
-    // Add your command logic here
-    console.log(`Executing: ${command}`);
-  };
-
   return (
-    <>
+    <div className="flex flex-col lg:flex-row w-full lg:w-[450vw] md:overflow-y-hidden sm:overflow-x-hidden">
       <About />
       <Work />
       <AboutMe />
       <MLJourney />
       <Contact />
-      <TypingQuote />
-    </>
+    </div>
   );
 }
