@@ -11,6 +11,8 @@ import { useRef, useState } from "react";
 import Image from "next/image";
 import About from "./About";
 import Work from "./Work";
+import AboutMe from "./Whoami";
+import MLJourney from "./Mljourney";
 
 export default function HeroContent() {
   const [activeTab, setActiveTab] = useState<"about" | "work" | "contact">(
@@ -25,17 +27,16 @@ export default function HeroContent() {
 
   return (
     <>
-      {/* Section 1: About (Terminal) */}
       <About />
-
-      {/* Section 2: Work (Code Editor) */}
       <Work />
+      <AboutMe />
+      <MLJourney />
       {/* Section 3: Contact (Email Client) */}
       <section
-        className="min-h-screen w-full px-4 py-24 md:px-0 md:py-32 bg-gray-900/70 flex items-center justify-center"
+        className="relative min-h-[400px] max-h-[600px] w-full px-2 py-8 md:px-0 md:py-12 bg-gray-900/70 flex items-center justify-center rounded-2xl shadow-xl mx-auto my-8"
         onClick={() => setActiveTab("contact")}
       >
-        <div className="max-w-4xl w-full mx-auto h-full flex flex-col gap-8">
+        <div className="max-w-xl w-full mx-auto h-full flex flex-col gap-6">
           <div className="mb-6 flex items-center">
             <FiMail className="mr-2 text-pink-400" />
             <span className="text-pink-400 font-mono">~/contact</span>

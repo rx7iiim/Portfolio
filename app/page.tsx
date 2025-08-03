@@ -27,7 +27,7 @@ export default function Home() {
       </div>
       <div
         ref={containerRef}
-        className="flex flex-row min-h-screen h-screen w-[300vw] relative"
+        className="flex flex-row min-h-screen h-screen w-[450vw] relative"
       >
         <HeroSection />
         {/* Horizontal scroll indicator */}
