@@ -5,6 +5,8 @@ import HeroSection from "@/components/HeroSection";
 import Image from "next/image";
 import { useRef } from "react";
 import { FiArrowRight } from "react-icons/fi";
+import Hedaer from "@/components/Hedaer";
+import Footer from "@/components/Footer";
 
 export default function Home() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -17,6 +19,7 @@ export default function Home() {
   return (
     <div className="relative min-h-screen w-full overflow-x-auto lg:overflow-x-auto overflow-y-auto sm:overflow-x-hidden">
       {/* Background image */}
+
       <div className="fixed inset-0 -z-10 w-full h-full">
         <div
           className="w-full h-full bg-cover bg-center"
@@ -35,7 +38,9 @@ export default function Home() {
       relative
     "
       >
+        <Hedaer />
         <HeroSection />
+        <Footer />
 
         {/* Horizontal scroll indicator (hide on mobile) */}
         <div className="hidden lg:block fixed bottom-8 left-1/2 transform -translate-x-1/2">
