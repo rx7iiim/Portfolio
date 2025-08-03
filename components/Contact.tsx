@@ -35,19 +35,39 @@ export default function Contact() {
 
   return (
     <section
-      className="relative min-h-[400px] max-h-[600px] w-full px-2 py-8 md:px-0 md:py-12 bg-gray-950/90 flex items-center justify-center rounded-2xl shadow-xl mx-auto my-8"
+      className="
+    relative 
+    min-h-[400px] sm:min-h-[500px] md:min-h-[550px] 
+    w-full 
+    px-3 sm:px-6 md:px-8 
+    py-8 sm:py-10 md:py-12 
+    bg-gray-950/90 
+    flex items-center justify-center 
+    rounded-2xl shadow-xl 
+    mx-auto my-6 md:my-8
+  "
       id="contact"
     >
       {/* Terminal-style decoration */}
-      <div className="absolute top-8 left-20 flex items-center gap-2 text-green-400 font-mono">
-        <FiMail className="text-lg" />
+      <div
+        className="
+      absolute top-6 sm:top-8 left-6 sm:left-10 
+      flex items-center gap-2 text-green-400 font-mono text-xs sm:text-sm
+    "
+      >
+        <FiMail className="text-base sm:text-lg" />
         <span>~/contact</span>
       </div>
 
       <div className="max-w-xl w-full mx-auto">
         {/* Form header */}
-        <div className="mb-6 px-2">
-          <h2 className="text-2xl font-bold text-white font-mono">
+        <div className="mb-6 px-2 text-center sm:text-left">
+          <h2
+            className="
+          text-xl sm:text-2xl md:text-3xl 
+          font-bold text-white font-mono leading-tight
+        "
+          >
             <span className="text-green-400">function</span>{" "}
             <span className="text-white">sendMessage</span>() {"{"}
           </h2>
@@ -57,13 +77,18 @@ export default function Contact() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="group bg-gradient-to-br from-gray-800/50 to-gray-900/70 rounded-lg border border-gray-700/50 hover:border-green-400/30 transition-all overflow-hidden shadow-2xl p-6"
+          className="
+        group bg-gradient-to-br from-gray-800/50 to-gray-900/70 
+        rounded-lg border border-gray-700/50 
+        hover:border-green-400/30 transition-all overflow-hidden 
+        shadow-2xl p-4 sm:p-6
+      "
         >
           <form onSubmit={handleSubmit}>
             <div className="space-y-4">
               {/* Email input */}
               <div>
-                <p className="text-gray-400 mb-2 font-mono text-sm">
+                <p className="text-gray-400 mb-2 font-mono text-xs sm:text-sm">
                   <span className="text-green-400">//</span>{" "}
                   your_email@domain.com
                 </p>
@@ -73,14 +98,20 @@ export default function Contact() {
                   value={formData.email}
                   onChange={handleChange}
                   placeholder="Enter your email..."
-                  className="w-full bg-gray-800 border border-gray-700 rounded px-4 py-3 text-white focus:outline-none focus:ring-1 focus:ring-green-400 font-mono text-sm shadow"
+                  className="
+                w-full bg-gray-800 border border-gray-700 
+                rounded px-3 sm:px-4 py-2 sm:py-3 
+                text-white focus:outline-none 
+                focus:ring-1 focus:ring-green-400 
+                font-mono text-xs sm:text-sm shadow
+              "
                   required
                 />
               </div>
 
               {/* Message input */}
               <div>
-                <p className="text-gray-400 mb-2 font-mono text-sm">
+                <p className="text-gray-400 mb-2 font-mono text-xs sm:text-sm">
                   <span className="text-green-400">//</span> your_message_here
                 </p>
                 <textarea
@@ -89,23 +120,34 @@ export default function Contact() {
                   onChange={handleChange}
                   rows={4}
                   placeholder="Type your message..."
-                  className="w-full bg-gray-800 border border-gray-700 rounded px-4 py-3 text-white focus:outline-none focus:ring-1 focus:ring-green-400 font-mono text-sm shadow"
+                  className="
+                w-full bg-gray-800 border border-gray-700 
+                rounded px-3 sm:px-4 py-2 sm:py-3 
+                text-white focus:outline-none 
+                focus:ring-1 focus:ring-green-400 
+                font-mono text-xs sm:text-sm shadow
+              "
                   required
                 />
               </div>
 
               {/* Submit button */}
-              <div className="pt-2">
+              <div className="pt-2 flex justify-center sm:justify-start">
                 <motion.button
                   type="submit"
                   whileHover={{ x: 2 }}
                   whileTap={{ scale: 0.95 }}
                   disabled={isSubmitting}
-                  className={`px-4 py-2 rounded font-mono text-sm flex items-center gap-2 ${
-                    isSubmitting
-                      ? "bg-gray-700 text-gray-500"
-                      : "bg-green-400/10 border border-green-400/30 text-green-400 hover:bg-green-400/20"
-                  } transition-colors shadow`}
+                  className={`
+                px-4 py-2 rounded font-mono text-xs sm:text-sm 
+                flex items-center gap-2
+                ${
+                  isSubmitting
+                    ? "bg-gray-700 text-gray-500"
+                    : "bg-green-400/10 border border-green-400/30 text-green-400 hover:bg-green-400/20"
+                }
+                transition-colors shadow
+              `}
                 >
                   {isSubmitting ? (
                     "processing..."
@@ -121,7 +163,7 @@ export default function Contact() {
           </form>
 
           {/* Form footer */}
-          <div className="mt-6 pt-4 border-t border-gray-700/30">
+          <div className="mt-6 pt-4 border-t border-gray-700/30 text-center sm:text-left">
             <p className="text-gray-500 font-mono text-xs">
               <span className="text-green-400">$</span> All fields are required
             </p>
@@ -129,7 +171,14 @@ export default function Contact() {
         </motion.div>
 
         {/* Terminal-style footer */}
-        <div className="mt-4 px-2 py-1 bg-gray-900/50 rounded border border-gray-700/30 text-gray-500 font-mono text-xs text-center">
+        <div
+          className="
+        mt-4 px-2 py-1 bg-gray-900/50 
+        rounded border border-gray-700/30 
+        text-gray-500 font-mono text-xs 
+        text-center
+      "
+        >
           <span className="text-green-400">$</span> Press Enter to submit form
         </div>
       </div>
@@ -141,25 +190,33 @@ export default function Contact() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4"
+            className="
+          fixed inset-0 bg-black/80 z-50 
+          flex items-center justify-center p-4
+        "
             onClick={() => setShowSuccessModal(false)}
           >
             <motion.div
               initial={{ scale: 0.9, y: 20 }}
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.9, y: 20 }}
-              className="relative bg-gray-900 rounded-xl w-full max-w-md p-6 border border-green-400/30"
+              className="
+            relative bg-gray-900 rounded-xl 
+            w-full max-w-sm sm:max-w-md 
+            p-4 sm:p-6 
+            border border-green-400/30
+          "
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex justify-between items-start mb-4">
-                <h3 className="text-lg font-mono text-green-400">
+                <h3 className="text-base sm:text-lg font-mono text-green-400">
                   Message Sent!
                 </h3>
                 <button
                   onClick={() => setShowSuccessModal(false)}
                   className="text-gray-400 hover:text-white"
                 >
-                  <FiX size={20} />
+                  <FiX size={18} />
                 </button>
               </div>
 
@@ -179,7 +236,12 @@ export default function Contact() {
                   onClick={() => setShowSuccessModal(false)}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  className="px-4 py-2 bg-green-400/10 border border-green-400/30 text-green-400 rounded font-mono text-sm"
+                  className="
+                px-4 py-2 bg-green-400/10 
+                border border-green-400/30 
+                text-green-400 rounded 
+                font-mono text-xs sm:text-sm
+              "
                 >
                   close_modal()
                 </motion.button>
