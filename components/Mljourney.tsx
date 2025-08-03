@@ -123,7 +123,7 @@ export default function MLJourney() {
       className="
         min-h-screen w-screen 
         px-4 py-12 
-        bg-gray-950/90 
+        bg-transparent
         flex items-center justify-center 
         rounded-2xl shadow-xl 
         mx-auto 

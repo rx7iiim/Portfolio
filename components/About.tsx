@@ -22,7 +22,7 @@ export default function About() {
     md:overflow-y-hidden
     px-4 sm:px-6 md:px-8
     py-8 sm:py-10 md:py-12 
-    bg-gray-950/90 
+    bg-transparent
     flex items-center justify-center 
     rounded-2xl shadow-xl 
     mx-auto my-6 md:my-8

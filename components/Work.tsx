@@ -82,7 +82,7 @@ export default function Work() {
       name: "price-prediction-ML-bot",
       description:
         "i preprocessed a dataset from kagle a bit ( removing NaN values, adding features and splitting the catogerical value column to binary columns ) and then scaled,splitted and trained & tested on linear , random forest ..finding best estimator at last",
-      tech: ["Numpy", "sklearn", "Pandas", "linear/random forest"],
+      tech: ["Electron", "React", "Node.js", "Docker", "Postgresql"],
       github: "https://github.com/rx7iiim/price-prediction-ML-bot",
       demo: "https://github.com/rx7iiim/price-prediction-ML-bot",
       image: "/Screenshot 2025-08-03 022710.png",
@@ -94,10 +94,10 @@ export default function Work() {
       name: "Aligno",
       description:
         "Aligno is my first freelance project . A desktop application designed for managers to streamline and organize their work. It provides an intuitive dashboard to oversee all activities, manage meetings efficiently, gather actionable insights, and organize clusters and PRDs (Product Requirement Documents).",
-      tech: ["Numpy", "sklearn", "Pandas", "linear/random forest"],
+      tech: ["Electron", "React", "Node.js", "Docker", "Postgresql"],
       github: "https://github.com/rx7iiim/price-prediction-ML-bot",
       demo: "https://drive.google.com/file/d/1UQpH3XI7Js9ORoTsIkKwtDgVPPYpAb1x/view?usp=drive_link",
-      image: "/Screenshot 2025-08-03 022710.png",
+      image: "/Screenshot 2025-08-03 023606.png",
       isDriveLink: true,
     },
   ];
@@ -125,7 +125,7 @@ export default function Work() {
   return (
     <section
       className="relative min-h-[400px] md:min-h-[500px] 
-    sm:h-screen md:h-screen  w-full px-2 py-8 md:px-0 md:py-12 bg-gray-950/90 flex items-center justify-center rounded-2xl shadow-xl mx-auto my-8 "
+    sm:h-screen md:h-screen  w-full px-2 py-8 md:px-0 md:py-12 bg-transparent flex items-center justify-center rounded-2xl shadow-xl mx-auto my-8 "
       id="projects"
     >
       {/* Terminal-style decoration */}
