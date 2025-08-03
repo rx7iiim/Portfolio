@@ -1,15 +1,9 @@
 "use client";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  FiTerminal,
-  FiCode,
-  FiFolder,
-  FiCpu,
-  FiMessageSquare,
-} from "react-icons/fi";
-import { useState } from "react";
+import { FiUser, FiFolder, FiTerminal, FiCpu, FiMail } from "react-icons/fi";
+import { useState, useEffect } from "react";
 
-type SectionId = "home" | "work" | "skills" | "projects" | "contact";
+type SectionId = "about" | "projects" | "whoami" | "ml-journey" | "contact";
 
 interface NavItem {
   id: SectionId;
@@ -20,38 +14,70 @@ interface NavItem {
 
 export default function SidebarWidget() {
   const [hoveredItem, setHoveredItem] = useState<SectionId | null>(null);
-  const [activeSection, setActiveSection] = useState<SectionId>("home");
+  const [activeSection, setActiveSection] = useState<SectionId>("about");
 
   const navItems: NavItem[] = [
-    { id: "home", label: "Terminal", icon: <FiTerminal />, command: "cd ~" },
     {
-      id: "work",
-      label: "Work",
-      icon: <FiCpu />,
-      command: "cat experience.md",
+      id: "about",
+      label: "About",
+      icon: <FiUser />,
+      command: "cat about.txt",
     },
-    { id: "skills", label: "Skills", icon: <FiCode />, command: "ls skills/" },
     {
       id: "projects",
       label: "Projects",
       icon: <FiFolder />,
-      command: "open projects/",
+      command: "ls projects/",
+    },
+    {
+      id: "whoami",
+      label: "Whoami",
+      icon: <FiTerminal />,
+      command: "whoami",
+    },
+    {
+      id: "ml-journey",
+      label: "ML Journey",
+      icon: <FiCpu />,
+      command: "tail -f ml_logs.log",
     },
     {
       id: "contact",
       label: "Contact",
-      icon: <FiMessageSquare />,
+      icon: <FiMail />,
       command: "send_message()",
     },
   ];
 
+  // Scroll to section when clicked
   const handleNavClick = (sectionId: SectionId) => {
-    setActiveSection(sectionId);
     document.getElementById(sectionId)?.scrollIntoView({
       behavior: "smooth",
-      block: "center",
+      block: "start",
     });
   };
+
+  // Track active section on scroll
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setActiveSection(entry.target.id as SectionId);
+          }
+        });
+      },
+      { threshold: 0.5 }
+    );
+
+    // Observe all sections
+    navItems.forEach((item) => {
+      const element = document.getElementById(item.id);
+      if (element) observer.observe(element);
+    });
+
+    return () => observer.disconnect();
+  }, []);
 
   return (
     <motion.div

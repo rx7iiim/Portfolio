@@ -123,9 +123,12 @@ export default function Work() {
   };
 
   return (
-    <section className="relative min-h-[400px] max-h-[600px] w-full px-2 py-8 md:px-0 md:py-12 bg-gray-950/90 flex items-center justify-center rounded-2xl shadow-xl mx-auto my-8">
+    <section
+      className="relative min-h-[400px] max-h-[600px] w-full px-2 py-8 md:px-0 md:py-12 bg-gray-950/90 flex items-center justify-center rounded-2xl shadow-xl mx-auto my-8 "
+      id="projects"
+    >
       {/* Terminal-style decoration */}
-      <div className="absolute top-4 left-4 flex items-center gap-2 text-green-400 font-mono">
+      <div className="absolute top-8 left-4 flex items-center gap-2 text-green-400 font-mono">
         <FiCode className="text-lg" />
         <span>~/projects</span>
       </div>

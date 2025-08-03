@@ -15,13 +15,13 @@ export default function About() {
   };
   return (
     <section
-      className="bg-transparent min-h-screen w-full px-4 py-24 md:px-0 md:py-32 flex flex-col items-center justify-center relative"
-      onClick={() => setActiveTab("about")}
+      className="relative min-h-[400px] max-h-[600px] w-full px-2 py-8 md:px-0 md:py-12 bg-gray-950/90 flex items-center justify-center rounded-2xl shadow-xl mx-auto my-8 "
+      id="about"
     >
       <div className="flex flex-col md:flex-row items-center gap-10 md:gap-20 w-full max-w-4xl mx-auto">
         <div className="w-32 h-32 md:w-48 md:h-48 relative rounded-full border-2 border-green-400/50 overflow-hidden shadow-lg">
           <Image
-            src="/26+32y.jpg"
+            src="/IMG_2105d.jpg"
             alt="Profile Picture"
             fill
             className="object-cover"
