@@ -131,8 +131,8 @@ export default function About() {
           "
             >
               I architect digital experiences with clean code and thoughtful
-              design. Currently open to work at{" "}
-              <span className="text-green-400">Company</span>. Passionate about
+              design. Currently open to work
+              <span className="text-green-400">.</span> Passionate about
               open-source and developer tools.
             </p>
           </div>

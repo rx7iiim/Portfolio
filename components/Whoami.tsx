@@ -35,7 +35,7 @@ export default function AboutMe() {
 
   return (
     <section
-      className="min-h-screen w-full px-4 py-12 bg-transparent flex items-center justify-center rounded-2xl shadow-xl mx-auto "
+      className="min-h-screen w-full px-4 py-12 pb-28 bg-transparent flex items-center justify-center rounded-2xl shadow-xl mx-auto "
       id="whoami"
     >
       <div className=" h-3/4 py-2 flex items-center justify-center mt-20">
@@ -120,15 +120,6 @@ export default function AboutMe() {
                 <span>connect_with_me()</span>
               </motion.a>
             </motion.div>
-          </div>
-
-          {/* Terminal-style footer */}
-          <div className="mt-12 px-4 py-3 bg-gray-900/50 rounded-lg border border-gray-700/30 text-gray-500 font-mono text-sm flex items-center justify-center gap-4">
-            <span className="text-green-400">$</span>
-            <span>
-              Currently working with: Next.js, React, NestJS, and Python data
-              tools
-            </span>
           </div>
         </div>
       </div>
