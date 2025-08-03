@@ -1,7 +1,7 @@
 import Image from "next/image";
 import React, { useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { FiTerminal, FiCode, FiMail } from "react-icons/fi";
+import { FiTerminal, FiCode, FiMail, FiDownload } from "react-icons/fi";
 
 export default function About() {
   const [activeTab, setActiveTab] = useState<"about" | "work" | "contact">(
@@ -10,9 +10,35 @@ export default function About() {
   const containerRef = useRef<HTMLDivElement>(null);
 
   const executeCommand = (command: string) => {
-    // Add your command logic here
-    console.log(`Executing: ${command}`);
+    switch (command) {
+      case "open projects":
+        // Scroll to projects section
+        const projectsSection = document.getElementById("projects");
+        if (projectsSection) {
+          projectsSection.scrollIntoView({ behavior: "smooth" });
+        }
+        break;
+      case "contact":
+        // Scroll to contact section
+        const contactSection = document.getElementById("contact");
+        if (contactSection) {
+          contactSection.scrollIntoView({ behavior: "smooth" });
+        }
+        break;
+      case "download cv":
+        // Trigger CV download
+        const link = document.createElement("a");
+        link.href = "/CV Resume.pdf"; // Update this path
+        link.download = "Abderrahim_Zine_CV.pdf";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        break;
+      default:
+        console.log(`Executing: ${command}`);
+    }
   };
+
   return (
     <section
       className="
@@ -148,6 +174,22 @@ export default function About() {
             >
               <FiMail />
               <span>contact_me()</span>
+            </motion.button>
+
+            <motion.button
+              className="
+            px-3 py-2 sm:px-5 sm:py-2 
+            bg-gray-800 border border-green-400/30 
+            rounded flex items-center gap-2 
+            text-green-400 hover:bg-green-400/10 
+            transition-colors shadow-sm text-xs sm:text-sm md:text-base
+          "
+              whileHover={{ x: 2 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => executeCommand("download cv")}
+            >
+              <FiDownload />
+              <span>download_cv()</span>
             </motion.button>
           </div>
         </div>

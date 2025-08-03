@@ -21,7 +21,7 @@ export default function Work() {
         "A modern portfolio built with Next.js, Tailwind CSS, and Framer Motion with smooth animations and responsive design.",
       tech: ["Next.js", "Tailwind", "Framer Motion", "TypeScript"],
       github: "https://github.com/rx7iiim/Portfolio",
-      demo: "https://portfolio-rx7iiim-suits-project.vercel.app/",
+      demo: "https://rx7iiim.vercel.app/",
       image: "/Screenshot 2025-08-03 011858.png",
       isDriveLink: false,
     },

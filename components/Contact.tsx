@@ -8,7 +8,6 @@ export default function Contact() {
     email: "",
     message: "",
   });
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   const handleChange = (
@@ -23,14 +22,19 @@ export default function Contact() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
 
-    // Simulate form submission
-    setTimeout(() => {
-      setIsSubmitting(false);
-      setShowSuccessModal(true);
-      setFormData({ email: "", message: "" });
-    }, 1500);
+    const subject = `Message from ${formData.email}`;
+    const body = formData.message;
+    const recipient = "a_zine@estin.dz";
+
+    // Open default mail client with prefilled data
+    window.location.href = `mailto:${recipient}?subject=${encodeURIComponent(
+      subject
+    )}&body=${encodeURIComponent(body)}`;
+
+    // Show success message
+    setShowSuccessModal(true);
+    setFormData({ email: "", message: "" });
   };
 
   return (
@@ -137,26 +141,16 @@ export default function Contact() {
                   type="submit"
                   whileHover={{ x: 2 }}
                   whileTap={{ scale: 0.95 }}
-                  disabled={isSubmitting}
-                  className={`
+                  className="
                 px-4 py-2 rounded font-mono text-xs sm:text-sm 
                 flex items-center gap-2
-                ${
-                  isSubmitting
-                    ? "bg-gray-700 text-gray-500"
-                    : "bg-green-400/10 border border-green-400/30 text-green-400 hover:bg-green-400/20"
-                }
+                bg-green-400/10 border border-green-400/30 
+                text-green-400 hover:bg-green-400/20
                 transition-colors shadow
-              `}
+              "
                 >
-                  {isSubmitting ? (
-                    "processing..."
-                  ) : (
-                    <>
-                      <FiMail size={14} />
-                      <span>send_message()</span>
-                    </>
-                  )}
+                  <FiMail size={14} />
+                  <span>send_message()</span>
                 </motion.button>
               </div>
             </div>
@@ -179,7 +173,8 @@ export default function Contact() {
         text-center
       "
         >
-          <span className="text-green-400">$</span> Press Enter to submit form
+          <span className="text-green-400">$</span> Will open your default mail
+          client
         </div>
       </div>
 
@@ -210,7 +205,7 @@ export default function Contact() {
             >
               <div className="flex justify-between items-start mb-4">
                 <h3 className="text-base sm:text-lg font-mono text-green-400">
-                  Message Sent!
+                  Ready to Send!
                 </h3>
                 <button
                   onClick={() => setShowSuccessModal(false)}
@@ -222,12 +217,12 @@ export default function Contact() {
 
               <div className="space-y-3">
                 <p className="text-gray-300 font-mono text-sm">
-                  <span className="text-green-400">$</span> Thank you for
-                  reaching out!
+                  <span className="text-green-400">$</span> Your default email
+                  client should open.
                 </p>
                 <p className="text-gray-400 font-mono text-xs">
-                  <span className="text-green-400">//</span> I'll get back to
-                  you soon.
+                  <span className="text-green-400">//</span> Just hit send to
+                  complete the process.
                 </p>
               </div>
 
