@@ -124,7 +124,8 @@ export default function Work() {
 
   return (
     <section
-      className="relative min-h-[400px] max-h-[600px] w-full px-2 py-8 md:px-0 md:py-12 bg-gray-950/90 flex items-center justify-center rounded-2xl shadow-xl mx-auto my-8 "
+      className="relative min-h-[400px] md:min-h-[500px] 
+    sm:h-screen md:h-screen  w-full px-2 py-8 md:px-0 md:py-12 bg-gray-950/90 flex items-center justify-center rounded-2xl shadow-xl mx-auto my-8 "
       id="projects"
     >
       {/* Terminal-style decoration */}
