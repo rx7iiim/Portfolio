@@ -5,7 +5,6 @@ import {
   FiCode,
   FiDatabase,
   FiTrendingUp,
-  FiBarChart2,
   FiCpu,
 } from "react-icons/fi";
 
@@ -21,20 +20,29 @@ const MLJourneyWidget = ({
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}
     transition={{ duration: 0.4, delay: index * 0.15 }}
-    className="flex-shrink-0 w-80 h-full bg-gradient-to-br from-gray-800/60 to-gray-900/70 rounded-2xl p-6 border border-gray-700 hover:border-green-400/30 transition-all shadow-2xl flex flex-col"
+    className="
+      flex-shrink-0 
+      w-full sm:w-80 
+      bg-gradient-to-br from-gray-800/60 to-gray-900/70 
+      rounded-2xl p-5 sm:p-6 
+      border border-gray-700 
+      hover:border-green-400/30 
+      transition-all shadow-2xl 
+      flex flex-col
+    "
   >
-    <div className="flex items-center gap-4 mb-5">
+    <div className="flex items-center gap-4 mb-4">
       <div className="p-3 rounded-xl bg-gradient-to-br from-gray-700 to-gray-800 shadow-lg">
         {milestone.icon}
       </div>
-      <h2 className="text-xl font-bold text-white">
+      <h2 className="text-lg sm:text-xl font-bold text-white">
         <span className="text-green-400">{">"}</span> {milestone.title}
       </h2>
     </div>
 
-    <p className="text-gray-300 text-sm mb-5">{milestone.description}</p>
+    <p className="text-gray-300 text-sm mb-4">{milestone.description}</p>
 
-    <div className="bg-gray-900/40 p-4 rounded-xl flex-grow backdrop-blur-sm">
+    <div className="bg-gray-900/40 p-3 sm:p-4 rounded-xl flex-grow backdrop-blur-sm">
       <pre className="text-gray-200 text-xs font-mono whitespace-pre-wrap">
         {milestone.details}
       </pre>
@@ -54,7 +62,7 @@ const MLJourneyWidget = ({
 );
 
 const PipelineConnector = () => (
-  <div className="flex-shrink-0 w-16 flex items-center justify-center">
+  <div className="hidden sm:flex flex-shrink-0 w-16 items-center justify-center">
     <div className="h-1 w-full bg-gray-700 relative">
       <div className="absolute -right-1 top-1/2 transform -translate-y-1/2 w-3 h-3 bg-green-400 rounded-full animate-pulse" />
     </div>
@@ -112,43 +120,57 @@ export default function MLJourney() {
 
   return (
     <section
-      className="min-h-screen w-full px-4 py-12 bg-gray-950/90 flex items-center justify-center rounded-2xl shadow-xl mx-auto "
+      className="
+        min-h-screen w-screen 
+        px-4 py-12 
+        bg-gray-950/90 
+        flex items-center justify-center 
+        rounded-2xl shadow-xl 
+        mx-auto 
+        flex-shrink-0
+      "
       id="ml-journey"
     >
-      <div className="relative  w-full mx-auto">
-        {/* Header with stats */}
+      <div className="relative w-full mx-auto">
+        {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="flex flex-col md:flex-row justify-between items-start md:items-end mb-10 px-4"
+          className="
+            flex flex-col md:flex-row 
+            justify-between items-start md:items-end 
+            mb-8 sm:mb-10 px-2 sm:px-4
+          "
         >
           <div>
             <div className="flex items-center gap-3 text-green-400 font-mono mb-2">
-              <FiCpu className="text-2xl" />
-              <span className="text-xl">~/ml_evolution</span>
+              <FiCpu className="text-xl sm:text-2xl" />
+              <span className="text-lg sm:text-xl">~/ml_evolution</span>
             </div>
           </div>
 
-          <div className="flex gap-6 mt-4 md:mt-0">
+          <div className="flex gap-4 sm:gap-6 mt-4 md:mt-0">
             <div className="text-center">
-              <p className="text-green-400 text-2xl font-mono">4</p>
-              <p className="text-gray-400 text-sm">Milestones</p>
+              <p className="text-green-400 text-xl sm:text-2xl font-mono">4</p>
+              <p className="text-gray-400 text-xs sm:text-sm">Milestones</p>
             </div>
             <div className="text-center">
-              <p className="text-green-400 text-2xl font-mono">120+</p>
-              <p className="text-gray-400 text-sm">Hours</p>
+              <p className="text-green-400 text-xl sm:text-2xl font-mono">
+                120+
+              </p>
+              <p className="text-gray-400 text-xs sm:text-sm">Hours</p>
             </div>
             <div className="text-center">
-              <p className="text-green-400 text-2xl font-mono">8+</p>
-              <p className="text-gray-400 text-sm">Projects</p>
+              <p className="text-green-400 text-xl sm:text-2xl font-mono">8+</p>
+              <p className="text-gray-400 text-xs sm:text-sm">Projects</p>
             </div>
           </div>
         </motion.div>
 
-        {/* Interactive pipeline */}
+        {/* Timeline */}
         <div className="relative">
-          {/* Progress bar */}
+          {/* Progress bar (desktop only) */}
           <div className="hidden md:block absolute top-1/2 left-0 right-0 h-1 bg-transparent transform -translate-y-1/2 z-0">
             <motion.div
               className="h-full bg-gradient-to-r from-green-400 to-blue-500"
@@ -158,18 +180,27 @@ export default function MLJourney() {
             />
           </div>
 
-          {/* Horizontal timeline with connectors */}
-          <div className="flex items-center h-[500px] md:h-[400px]  pb-10 px-4 ">
+          {/* Milestones */}
+          <div
+            className="
+              flex flex-col sm:flex-row 
+              items-stretch sm:items-center 
+              gap-6 sm:gap-0 
+              h-auto sm:h-[400px] 
+              pb-8 sm:pb-10 px-2 sm:px-4
+            "
+          >
             {milestones.map((milestone, index) => (
-              <>
+              <div
+                key={index}
+                className="flex flex-col sm:flex-row items-center sm:items-stretch"
+              >
                 <MLJourneyWidget milestone={milestone} index={index} />
                 {index < milestones.length - 1 && <PipelineConnector />}
-              </>
+              </div>
             ))}
           </div>
         </div>
-
-        {/* Terminal footer */}
       </div>
     </section>
   );
