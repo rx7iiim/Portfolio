@@ -49,7 +49,6 @@ export default function SidebarWidget() {
     },
   ];
 
-  // Scroll to section when clicked
   const handleNavClick = (sectionId: SectionId) => {
     document.getElementById(sectionId)?.scrollIntoView({
       behavior: "smooth",
@@ -57,7 +56,6 @@ export default function SidebarWidget() {
     });
   };
 
-  // Track active section on scroll
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
