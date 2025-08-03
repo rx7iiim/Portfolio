@@ -15,7 +15,7 @@ export default function Home() {
 
   const xBg = useTransform(scrollXProgress, [0, 1], ["0%", "50%"]);
   return (
-    <div className="relative min-h-screen w-full overflow-x-auto overflow-y-hidden">
+    <div className="relative min-h-screen w-full overflow-x-auto overflow-y-hidden ">
       {/* Background image */}
       <div className="fixed inset-0 -z-10 w-full h-full">
         <div
@@ -28,11 +28,6 @@ export default function Home() {
       <div
         ref={containerRef}
         className="flex flex-row min-h-screen h-screen w-[300vw] relative"
-        style={{
-          scrollSnapType: "x mandatory",
-          overflowX: "auto",
-          overflowY: "hidden",
-        }}
       >
         <HeroSection />
         {/* Horizontal scroll indicator */}
