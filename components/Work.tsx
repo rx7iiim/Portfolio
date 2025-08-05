@@ -124,12 +124,20 @@ export default function Work() {
 
   return (
     <section
-      className="relative min-h-[400px] md:min-h-[500px] 
-    sm:h-screen md:h-screen  w-full px-2 py-8 md:px-0 md:py-12 bg-transparent flex items-center justify-center rounded-2xl shadow-xl mx-auto my-8 "
+      className="
+    sm:h-auto
+    w-full
+    lg:ml-36
+     sm:px-6 lg:px-12
+    py-6
+    bg-transparent
+    flex flex-col items-start justify-center 
+   
+  "
       id="projects"
     >
       {/* Terminal-style decoration */}
-      <div className="absolute top-8 left-4 flex items-center gap-2 text-green-400 font-mono">
+      <div className=" top-8 left-4 flex items-center gap-2 text-green-400 font-mono">
         <FiCode className="text-lg" />
         <span>~/projects</span>
       </div>
