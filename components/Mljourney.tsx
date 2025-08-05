@@ -121,14 +121,18 @@ export default function MLJourney() {
   return (
     <section
       className="
-        min-h-screen w-screen 
-        px-4 py-12 
-        bg-transparent
-        flex items-center justify-center 
-        rounded-2xl shadow-xl 
-        mx-auto 
-        flex-shrink-0
-      "
+      relative
+    h-full
+    lg:h-screen
+    w-full
+    lg:ml-36
+     sm:px-6 lg:px-12
+    py-6
+    bg-transparent
+    flex items-center justify-center 
+    sm:h-auto
+   
+  "
       id="ml-journey"
     >
       <div className="relative w-full mx-auto">
