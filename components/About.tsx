@@ -42,25 +42,23 @@ export default function About() {
   return (
     <section
       className="
-    relative 
-    min-h-[450px] sm:min-h-[500px] md:min-h-[550px]
+      h-screen
     w-full
-    md:overflow-y-hidden
-    px-4 sm:px-6 md:px-8
-    py-8 sm:py-10 md:py-12 
+    lg:ml-48
+     sm:px-6 lg:px-12
+    py-6
     bg-transparent
     flex items-center justify-center 
-    rounded-2xl shadow-xl 
-    mx-auto my-6 md:my-8
+   
   "
       id="about"
     >
       <div
         className="
-      flex flex-col md:flex-row 
+      flex flex-col lg:flex-row 
       justify-center
       items-center md:items-center
-      gap-8 sm:gap-10 md:gap-20 
+      sm:gap-10 md:gap-20 
       w-full max-w-6xl mx-auto
     "
       >
