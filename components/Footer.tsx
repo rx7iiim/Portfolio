@@ -1,6 +1,12 @@
 "use client";
 import React, { useRef, useState } from "react";
-import { FiGithub, FiLinkedin, FiMail, FiTwitter } from "react-icons/fi";
+import {
+  FiArrowRight,
+  FiGithub,
+  FiLinkedin,
+  FiMail,
+  FiTwitter,
+} from "react-icons/fi";
 import { motion } from "framer-motion";
 
 export default function Footer() {
@@ -29,15 +35,28 @@ export default function Footer() {
   return (
     <div>
       {/* Terminal prompt footer */}
-      <div className="w-full h-14 bg-gray-900 flex justify-between items-center px-6 z-10 border-t border-gray-800 shadow-md">
-        <span className="text-green-400 font-mono">$</span>
-        <span className="ml-3 text-gray-400 font-mono">
-          {activeTab === "about"
-            ? "Type 'help' for commands"
-            : activeTab === "work"
-            ? "Viewing project files..."
-            : "Composing message..."}
-        </span>
+      <div className=" py-6 bg-gray-900 flex justify-between items-center px-6 z-10 border-t border-gray-800 shadow-md lg:overflow-x-hidden sm:overflow-y-hidden w-full">
+        <div>
+          <span className="text-green-400 font-mono">$</span>
+          <span className="ml-3 text-gray-400 font-mono">
+            {activeTab === "about"
+              ? "Type 'help' for commands"
+              : activeTab === "work"
+              ? "Viewing project files..."
+              : "Composing message..."}
+          </span>
+        </div>
+        {/* Horizontal scroll indicator (hide on mobile) */}
+        <div className="hidden lg:block fixed bottom-8 left-1/2 transform -translate-x-1/2">
+          <motion.div
+            animate={{ x: [-5, 5, -5] }}
+            transition={{ repeat: Infinity, duration: 2 }}
+            className="flex items-center gap-2"
+          >
+            <span className="text-gray-400 text-sm">Scroll horizontally</span>
+            <FiArrowRight className="text-gray-400" />
+          </motion.div>
+        </div>
         <div className="flex  items-center justify-between space-x-3">
           {socialLinks.map((link, index) => (
             <motion.a
