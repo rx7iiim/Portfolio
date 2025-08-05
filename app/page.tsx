@@ -17,7 +17,7 @@ export default function Home() {
 
   const xBg = useTransform(scrollXProgress, [0, 1], ["0%", "50%"]);
   return (
-    <div className="min-h-screen lg:h-screen w-full max-w-full overflow-x-auto overflow-y-auto lg:overflow-x-auto lg:overflow-y-hidden">
+    <div className="min-h-screen lg:h-screen w-full max-w-full overflow-x-auto overflow-y-auto lg:overflow-x-auto lg:overflow-y-hidden sm:overflow-x-auto">
       {/* Background image */}
 
       <div className="fixed inset-0 -z-10 w-full h-full">

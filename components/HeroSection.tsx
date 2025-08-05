@@ -18,7 +18,7 @@ import { TypingQuote } from "./quote";
 
 export default function HeroContent() {
   return (
-    <div className="flex flex-col space-y-3  lg:flex-row w-full lg:w-[450vw] ">
+    <div className="flex flex-col space-y-3  lg:flex-row w-full lg:w-[450vw] sm:overflow-x-auto">
       <About />
       <Work />
       <AboutMe />

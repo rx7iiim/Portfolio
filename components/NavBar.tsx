@@ -23,9 +23,10 @@ interface NavItem {
 export default function SidebarWidget() {
   const [hoveredItem, setHoveredItem] = useState<SectionId | null>(null);
   const [activeSection, setActiveSection] = useState<SectionId>("about");
-  const [isHovering, setIsHovering] = useState(false);
+  const [isVisible, setIsVisible] = useState(true);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [initialLoad, setInitialLoad] = useState(true);
 
   const navItems: NavItem[] = [
     {
@@ -67,8 +68,19 @@ export default function SidebarWidget() {
 
     checkIfMobile();
     window.addEventListener("resize", checkIfMobile);
-    return () => window.removeEventListener("resize", checkIfMobile);
-  }, []);
+
+    const timer = setTimeout(() => {
+      if (initialLoad && !isMobile) {
+        setIsVisible(false);
+        setInitialLoad(false);
+      }
+    }, 3000);
+
+    return () => {
+      window.removeEventListener("resize", checkIfMobile);
+      clearTimeout(timer);
+    };
+  }, [initialLoad, isMobile]);
 
   const handleNavClick = (sectionId: SectionId) => {
     document.getElementById(sectionId)?.scrollIntoView({
@@ -100,24 +112,34 @@ export default function SidebarWidget() {
     return () => observer.disconnect();
   }, []);
 
+  const handleHoverAreaHover = (hovering: boolean) => {
+    if (!isMobile && !initialLoad) {
+      setIsVisible(hovering);
+    }
+  };
+
   const renderDesktopSidebar = () => (
     <div
       className="fixed left-0 top-1/2 -translate-y-1/2 z-50 h-screen flex"
-      onMouseEnter={() => setIsHovering(true)}
-      onMouseLeave={() => setIsHovering(false)}
+      onMouseEnter={() => handleHoverAreaHover(true)}
+      onMouseLeave={() => handleHoverAreaHover(false)}
     >
-      <div className="w-16 h-full" />
+      <div className="w-8 h-full" />
 
       <AnimatePresence>
-        {isHovering && (
+        {(isVisible || initialLoad) && (
           <motion.div
-            className="absolute left-6 top-1/2 -translate-y-1/2 z-50"
+            className="absolute left-4 top-1/2 -translate-y-1/2 z-50"
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
             transition={{ duration: 0.2 }}
           >
-            <div className="bg-gray-900/80 backdrop-blur-md rounded-xl p-3 border border-gray-700/50 shadow-lg">
+            <div
+              className="bg-gray-900/80 backdrop-blur-md rounded-xl p-3 border border-gray-700/50 shadow-lg"
+              onMouseEnter={() => handleHoverAreaHover(true)}
+              onMouseLeave={() => handleHoverAreaHover(false)}
+            >
               <div className="flex flex-col gap-3">
                 {navItems.map((item) => (
                   <motion.button
@@ -168,7 +190,7 @@ export default function SidebarWidget() {
 
   const renderMobileMenuButton = () => (
     <motion.button
-      className="fixed left-4 top-10 z-50 p-3 bg-gray-900/80 backdrop-blur-md rounded-lg border border-gray-700/50 text-gray-400 hover:text-green-400"
+      className="fixed left-4 top-4 z-50 p-3 bg-gray-900/80 backdrop-blur-md rounded-lg border border-gray-700/50 text-gray-400 hover:text-green-400"
       onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
       whileHover={{ scale: 1.05 }}
       whileTap={{ scale: 0.95 }}
@@ -233,8 +255,12 @@ export default function SidebarWidget() {
   return (
     <>
       {!isMobile && renderDesktopSidebar()}
-      {isMobile && renderMobileMenuButton()}
-      {isMobile && renderMobileSidebar()}
+      {isMobile && (
+        <>
+          {renderMobileMenuButton()}
+          {renderMobileSidebar()}
+        </>
+      )}
     </>
   );
 }
