@@ -17,7 +17,7 @@ export default function Home() {
 
   const xBg = useTransform(scrollXProgress, [0, 1], ["0%", "50%"]);
   return (
-    <div className="relative min-h-screen w-full overflow-x-auto lg:overflow-x-auto overflow-y-auto sm:overflow-x-hidden">
+    <div className="min-h-screen lg:h-screen w-full max-w-full overflow-x-auto overflow-y-auto lg:overflow-x-auto lg:overflow-y-hidden">
       {/* Background image */}
 
       <div className="fixed inset-0 -z-10 w-full h-full">
@@ -31,28 +31,9 @@ export default function Home() {
 
       <div
         ref={containerRef}
-        className="
-      flex flex-col lg:flex-row 
-      min-h-screen h-screen 
-      w-full lg:w-[450vw] 
-      relative
-    "
+        className="bg-gray-950/90 flex flex-col items-center justify-between min-h-screen w-full lg:w-[450vw] lg:overflow-y-hidden sm:overflow-x-hidden"
       >
-        <Hedaer />
         <HeroSection />
-        <Footer />
-
-        {/* Horizontal scroll indicator (hide on mobile) */}
-        <div className="hidden lg:block fixed bottom-8 left-1/2 transform -translate-x-1/2">
-          <motion.div
-            animate={{ x: [-5, 5, -5] }}
-            transition={{ repeat: Infinity, duration: 2 }}
-            className="flex items-center gap-2"
-          >
-            <span className="text-gray-400 text-sm">Scroll horizontally</span>
-            <FiArrowRight className="text-gray-400" />
-          </motion.div>
-        </div>
 
         {/* Background grid */}
         <motion.div
