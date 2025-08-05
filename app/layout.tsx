@@ -28,8 +28,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col items-center justify-between`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased `}
       >
+        <Hedaer />
         <Sidebar />
         {children}
       </body>
