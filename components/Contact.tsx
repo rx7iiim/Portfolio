@@ -40,22 +40,22 @@ export default function Contact() {
   return (
     <section
       className="
-    relative 
-    min-h-[400px] sm:min-h-[500px] md:min-h-[550px] 
-    w-full 
-    px-3 sm:px-6 md:px-8 
-    py-8 sm:py-10 md:py-12 
+    h-full
+    lg:h-screen
+    w-full
+    lg:ml-36
+     sm:px-6 lg:px-12
+    py-6
     bg-transparent
-    flex items-center justify-center 
-    rounded-2xl shadow-xl 
-    mx-auto my-6 md:my-8
+    flex flex-col items-start justify-center 
+   
   "
       id="contact"
     >
       {/* Terminal-style decoration */}
       <div
-        className="
-      absolute top-6 sm:top-8 left-6 sm:left-10 
+        className="mr-4 mb-4
+      
       flex items-center gap-2 text-green-400 font-mono text-xs sm:text-sm
     "
       >
