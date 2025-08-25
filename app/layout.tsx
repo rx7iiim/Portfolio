@@ -4,6 +4,7 @@ import "./globals.css";
 import Sidebar from "@/components/NavBar";
 import Hedaer from "@/components/Hedaer";
 import Footer from "@/components/Footer";
+import { Analytics } from "@vercel/analytics/next";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -33,6 +34,7 @@ export default function RootLayout({
         <Hedaer />
         <Sidebar />
         {children}
+        <Analytics />
       </body>
     </html>
   );
