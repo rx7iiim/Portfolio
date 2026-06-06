@@ -127,6 +127,24 @@ export interface About extends BasePageConfig {
     /** Link to the calendar */
     link: string;
   };
+  /** Featured projects section */
+  projects: {
+    /** Whether to display featured projects */
+    display: boolean;
+    /** Title for the projects section */
+    title: string;
+    /** List of projects */
+    items: Array<{
+      title: string;
+      description: React.ReactNode;
+      tech: string;
+      buttons: Array<{
+        label: string;
+        href: string;
+        icon?: string;
+      }>;
+    }>;
+  };
   /** Introduction section */
   intro: {
     /** Whether to display the introduction */

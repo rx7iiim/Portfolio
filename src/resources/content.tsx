@@ -2,18 +2,18 @@ import { About, Blog, Gallery, Home, Newsletter, Person, Social, Work } from "@/
 import { Line, Row, Text } from "@once-ui-system/core";
 
 const person: Person = {
-  firstName: "Selene",
-  lastName: "Yu",
-  name: `Selene Yu`,
-  role: "Design Engineer",
-  avatar: "/images/avatar.jpg",
-  email: "example@gmail.com",
-  location: "Asia/Jakarta", // Expecting the IANA time zone identifier, e.g., 'Europe/Vienna'
-  languages: ["English", "Bahasa"], // optional: Leave the array empty if you don't want to display languages
+  firstName: "Abderrahim",
+  lastName: "Zine",
+  name: `Abderrahim Zine`,
+  role: "Full Stack Developer",
+  avatar: "/images/avatar.png",
+  email: "azine@estin.dz",
+  location: "Africa/Algiers", // Expecting the IANA time zone identifier, e.g., 'Europe/Vienna'
+  languages: ["English", "French", "Arabic"], // optional: Leave the array empty if you don't want to display languages
 };
 
 const newsletter: Newsletter = {
-  display: true,
+  display: false,
   title: <>Subscribe to {person.firstName}'s Newsletter</>,
   description: <>My weekly newsletter about creativity and engineering</>,
 };
@@ -25,25 +25,13 @@ const social: Social = [
   {
     name: "GitHub",
     icon: "github",
-    link: "https://github.com/once-ui-system",
+    link: "https://github.com/rx7iiim",
     essential: true,
   },
   {
     name: "LinkedIn",
     icon: "linkedin",
-    link: "https://www.linkedin.com/company/once-ui/",
-    essential: true,
-  },
-  {
-    name: "Instagram",
-    icon: "instagram",
-    link: "https://www.instagram.com/once_ui/",
-    essential: false,
-  },
-  {
-    name: "Threads",
-    icon: "threads",
-    link: "https://www.threads.com/@once_ui",
+    link: "https://www.linkedin.com/in/abderrahim-zine-b2b511329",
     essential: true,
   },
   {
@@ -60,24 +48,24 @@ const home: Home = {
   label: "Home",
   title: `${person.name}'s Portfolio`,
   description: `Portfolio website showcasing my work as a ${person.role}`,
-  headline: <>Building bridges between design and code</>,
+  headline: <>Full Stack Developer | Computer Science Student at ESTIN</>,
   featured: {
     display: true,
     title: (
       <Row gap="12" vertical="center">
-        <strong className="ml-4">Once UI</strong>{" "}
+        <strong className="ml-4">Experience & Internships</strong>{" "}
         <Line background="brand-alpha-strong" vert height="20" />
         <Text marginRight="4" onBackground="brand-medium">
           Featured work
         </Text>
       </Row>
     ),
-    href: "/work/building-once-ui-a-customizable-design-system",
+    href: "/about",
   },
   subline: (
     <>
-    I'm Selene, a design engineer at <Text as="span" size="xl" weight="strong">ONCE UI</Text>, where I craft intuitive <br /> user experiences. After hours, I build my own projects.
-</>
+      I am a CS student at <Text as="span" size="xl" weight="strong">ESTIN</Text> with over 2 years of hands-on full-stack development experience. I have a proven track record of delivering real-world, production-grade web applications through freelance work and internships, combined with a solid academic foundation in machine learning.
+    </>
   ),
 };
 
@@ -94,7 +82,7 @@ const about: About = {
     display: true,
   },
   calendar: {
-    display: true,
+    display: false,
     link: "https://cal.com",
   },
   intro: {
@@ -102,53 +90,78 @@ const about: About = {
     title: "Introduction",
     description: (
       <>
-        Selene is a Jakarta-based design engineer with a passion for transforming complex challenges
-        into simple, elegant design solutions. Her work spans digital interfaces, interactive
-        experiences, and the convergence of design and technology.
+        I am a CS student at ESTIN with over 2 years of hands-on full-stack development experience, specializing in building production-grade web applications and machine learning integrations.
       </>
     ),
+  },
+  projects: {
+    display: true,
+    title: "Featured Projects",
+    items: [
+      {
+        title: "PostPlan",
+        description: <>A unified social media management dashboard built for scale.</>,
+        tech: "React, Node.js, PostgreSQL",
+        buttons: [
+          { label: "View Project", href: "#", icon: "chevronRight" },
+          { label: "GitHub", href: "https://github.com/rx7iiim", icon: "github" },
+        ],
+      },
+      {
+        title: "Museum of Bejaia Archive",
+        description: <>A digital archive platform and custom database for showcasing cultural assets.</>,
+        tech: "Next.js, Full Stack",
+        buttons: [
+          { label: "View Project", href: "#", icon: "chevronRight" },
+        ],
+      },
+    ],
   },
   work: {
     display: true, // set to false to hide this section
     title: "Work Experience",
     experiences: [
       {
-        company: "FLY",
+        company: "Freelance",
         timeframe: "2022 - Present",
-        role: "Senior Design Engineer",
+        role: "Full Stack Developer",
         achievements: [
           <>
-            Redesigned the UI/UX for the FLY platform, resulting in a 20% increase in user
-            engagement and 30% faster load times.
-          </>,
-          <>
-            Spearheaded the integration of AI tools into design workflows, enabling designers to
-            iterate 50% faster.
-          </>,
+            Delivered 4+ full-stack web projects with end-to-end ownership, including a unified social media dashboard.
+          </>
         ],
-        images: [
-          // optional: leave the array empty if you don't want to display images
-          {
-            src: "/images/projects/project-01/cover-01.jpg",
-            alt: "Once UI Project",
-            width: 16,
-            height: 9,
-          },
-        ],
+        images: [],
       },
       {
-        company: "Creativ3",
-        timeframe: "2018 - 2022",
-        role: "Lead Designer",
+        company: "Kleer Infini Export",
+        timeframe: "2024",
+        role: "Front-End Developer Intern",
         achievements: [
           <>
-            Developed a design system that unified the brand across multiple platforms, improving
-            design consistency by 40%.
-          </>,
+            Developed the "Expéditeur" shipping portal and implemented secure authentication flows.
+          </>
+        ],
+        images: [],
+      },
+      {
+        company: "ESTIN CDE",
+        timeframe: "2024",
+        role: "Full Stack Developer Intern",
+        achievements: [
           <>
-            Led a cross-functional team to launch a new product line, contributing to a 15% increase
-            in overall company revenue.
-          </>,
+            Built a production-ready internal platform to manage 5th-year end-of-study projects.
+          </>
+        ],
+        images: [],
+      },
+      {
+        company: "Museum of Bejaia",
+        timeframe: "2023",
+        role: "Full Stack Developer Intern",
+        achievements: [
+          <>
+            Designed a custom DB schema and built a digital archive platform for cultural assets.
+          </>
         ],
         images: [],
       },
@@ -156,15 +169,19 @@ const about: About = {
   },
   studies: {
     display: true, // set to false to hide this section
-    title: "Studies",
+    title: "Studies & Leadership",
     institutions: [
       {
-        name: "University of Jakarta",
-        description: <>Studied software engineering.</>,
+        name: "ESTIN",
+        description: <>Computer Science Student</>,
       },
       {
-        name: "Build the Future",
-        description: <>Studied online marketing and personal branding.</>,
+        name: "ByteCraft Scientific Club",
+        description: <>Development Department Manager (managing tech projects, mentoring juniors).</>,
+      },
+      {
+        name: "LDC Cultural Club",
+        description: <>External Relations Department Manager (partnerships and official communications).</>,
       },
     ],
   },
@@ -173,60 +190,57 @@ const about: About = {
     title: "Technical skills",
     skills: [
       {
-        title: "Figma",
+        title: "Frontend",
         description: (
-          <>Able to prototype in Figma with Once UI with unnatural speed.</>
+          <>React.js, Next.js, TypeScript, Tailwind CSS</>
         ),
         tags: [
-          {
-            name: "Figma",
-            icon: "figma",
-          },
+          { name: "React", icon: "react" },
+          { name: "Next.js", icon: "nextjs" },
+          { name: "TypeScript", icon: "typescript" },
+          { name: "Tailwind", icon: "tailwind" },
         ],
-        // optional: leave the array empty if you don't want to display images
-        images: [
-          {
-            src: "/images/projects/project-01/cover-02.jpg",
-            alt: "Project image",
-            width: 16,
-            height: 9,
-          },
-          {
-            src: "/images/projects/project-01/cover-03.jpg",
-            alt: "Project image",
-            width: 16,
-            height: 9,
-          },
-        ],
+        images: [],
       },
       {
-        title: "Next.js",
+        title: "Backend",
         description: (
-          <>Building next gen apps with Next.js + Once UI + Supabase.</>
+          <>Node.js, Express.js, NestJS, REST APIs</>
         ),
         tags: [
-          {
-            name: "JavaScript",
-            icon: "javascript",
-          },
-          {
-            name: "Next.js",
-            icon: "nextjs",
-          },
-          {
-            name: "Supabase",
-            icon: "supabase",
-          },
+          { name: "Node.js", icon: "node" },
         ],
-        // optional: leave the array empty if you don't want to display images
-        images: [
-          {
-            src: "/images/projects/project-01/cover-04.jpg",
-            alt: "Project image",
-            width: 16,
-            height: 9,
-          },
+        images: [],
+      },
+      {
+        title: "Database",
+        description: (
+          <>PostgreSQL, MySQL, MongoDB</>
+        ),
+        tags: [],
+        images: [],
+      },
+      {
+        title: "Machine Learning",
+        description: (
+          <>Python, TensorFlow, PyTorch, Scikit-learn, Pandas, NumPy</>
+        ),
+        tags: [
+          { name: "Python", icon: "python" },
         ],
+        images: [],
+      },
+      {
+        title: "Tools/DevOps",
+        description: (
+          <>Git, Docker, Linux</>
+        ),
+        tags: [
+          { name: "Git", icon: "git" },
+          { name: "Docker", icon: "docker" },
+          { name: "Linux", icon: "linux" },
+        ],
+        images: [],
       },
     ],
   },

@@ -67,3 +67,10 @@
   --scheme-neutral-600-50: rgba(137,152,159,0.5);
   /*
 }*/
+
+/* ── Avatar image centering ── */
+[class*="Avatar"] img,
+[class*="avatar"] img {
+  object-fit: cover;
+  object-position: center top;
+}

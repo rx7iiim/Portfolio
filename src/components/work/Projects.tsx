@@ -16,7 +16,29 @@ export function Projects({ range, exclude }: ProjectsProps) {
   }
 
   const sortedProjects = allProjects.sort((a, b) => {
-    return new Date(b.metadata.publishedAt).getTime() - new Date(a.metadata.publishedAt).getTime();
+    const aOrder =
+      typeof a.metadata.order === "number" ? a.metadata.order : undefined;
+    const bOrder =
+      typeof b.metadata.order === "number" ? b.metadata.order : undefined;
+
+    // If both have explicit order, sort ascending by it
+    if (
+      typeof aOrder === "number" &&
+      typeof bOrder === "number" &&
+      aOrder !== bOrder
+    ) {
+      return aOrder - bOrder;
+    }
+
+    // If only one has order, it comes first
+    if (typeof aOrder === "number" && typeof bOrder !== "number") return -1;
+    if (typeof bOrder === "number" && typeof aOrder !== "number") return 1;
+
+    // Fallback to published date (newest first)
+    return (
+      new Date(b.metadata.publishedAt).getTime() -
+      new Date(a.metadata.publishedAt).getTime()
+    );
   });
 
   const displayedProjects = range
@@ -34,7 +56,9 @@ export function Projects({ range, exclude }: ProjectsProps) {
           title={post.metadata.title}
           description={post.metadata.summary}
           content={post.content}
-          avatars={post.metadata.team?.map((member) => ({ src: member.avatar })) || []}
+          avatars={
+            post.metadata.team?.map((member) => ({ src: member.avatar })) || []
+          }
           link={post.metadata.link || ""}
         />
       ))}
