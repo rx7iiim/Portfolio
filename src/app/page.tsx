@@ -216,6 +216,7 @@ export default function Home() {
                   href="/cv.pdf"
                   variant="secondary"
                   size="m"
+                  download="Abderrahim_Zine_Resume.pdf"
                 >
                   Download Resume
                 </Button>

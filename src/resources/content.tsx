@@ -165,7 +165,7 @@ const about: About = {
     experiences: [
       {
         company: "Freelance",
-        timeframe: "2022 - Present",
+        timeframe: "2025 - Present",
         role: "Full Stack Developer",
         achievements: [
           <>
@@ -176,7 +176,7 @@ const about: About = {
       },
       {
         company: "Kleer Infini Export",
-        timeframe: "2024",
+        timeframe: "2025",
         role: "Front-End Developer Intern",
         achievements: [
           <>
@@ -187,7 +187,7 @@ const about: About = {
       },
       {
         company: "ESTIN CDE",
-        timeframe: "2024",
+        timeframe: "2025-presnet",
         role: "Full Stack Developer Intern",
         achievements: [
           <>
@@ -198,7 +198,7 @@ const about: About = {
       },
       {
         company: "Museum of Bejaia",
-        timeframe: "2023",
+        timeframe: "2025-2026",
         role: "Full Stack Developer Intern",
         achievements: [
           <>
@@ -229,25 +229,24 @@ const about: About = {
   },
   technical: {
     display: true, // set to false to hide this section
-    title: "Technical skills",
+    title: "Technology Arsenal",
     skills: [
       {
-        title: "Frontend",
+        title: "Languages",
         description: (
-          <>React.js, Next.js, TypeScript, Tailwind CSS</>
+          <>TypeScript, Python, Go, C#, C, Java, JavaScript, Bun</>
         ),
         tags: [
-          { name: "React", icon: "react" },
-          { name: "Next.js", icon: "nextjs" },
           { name: "TypeScript", icon: "typescript" },
-          { name: "Tailwind", icon: "tailwind" },
+          { name: "Python", icon: "python" },
+          { name: "JavaScript", icon: "javascript" },
         ],
         images: [],
       },
       {
-        title: "Backend",
+        title: "Backend & Frameworks",
         description: (
-          <>Node.js, Express.js, NestJS, REST APIs</>
+          <>NestJS, FastAPI, Express.js, .NET, Node.js, Kafka, Laravel, gRPC</>
         ),
         tags: [
           { name: "Node.js", icon: "node" },
@@ -255,9 +254,21 @@ const about: About = {
         images: [],
       },
       {
-        title: "Database",
+        title: "Frontend & UI",
         description: (
-          <>PostgreSQL, MySQL, MongoDB</>
+          <>React.js, Next.js, Tailwind CSS, HTML5, CSS3, Sass</>
+        ),
+        tags: [
+          { name: "React", icon: "react" },
+          { name: "Next.js", icon: "nextjs" },
+          { name: "Tailwind CSS", icon: "tailwind" },
+        ],
+        images: [],
+      },
+      {
+        title: "Databases & Caching",
+        description: (
+          <>PostgreSQL, MySQL, MongoDB, Redis, SQLite, Prisma</>
         ),
         tags: [],
         images: [],
@@ -273,13 +284,14 @@ const about: About = {
         images: [],
       },
       {
-        title: "Tools/DevOps",
+        title: "DevOps & Tools",
         description: (
-          <>Git, Docker, Linux</>
+          <>Docker, Git, GitHub, GitHub Actions, VS Code, Linux, Postman</>
         ),
         tags: [
-          { name: "Git", icon: "git" },
           { name: "Docker", icon: "docker" },
+          { name: "Git", icon: "git" },
+          { name: "GitHub", icon: "github" },
           { name: "Linux", icon: "linux" },
         ],
         images: [],
