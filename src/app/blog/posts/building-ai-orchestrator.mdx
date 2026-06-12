@@ -1,0 +1,182 @@
+---
+title: "Building an AI Orchestrator from Scratch"
+summary: "Startopsy's AI co-founder, BMC generator, and competitor analysis all flow through one orchestrator. How I designed it to be stateless, scalable, and swap-friendly between LLM providers."
+publishedAt: "2026-06-05"
+tag: "System Design"
+---
+
+## What Is an AI Orchestrator?
+
+An AI Orchestrator is a service that sits between your application and your LLM providers. It handles:
+- **Prompt construction** — assembling context, user data, and instructions
+- **Provider routing** — choosing between OpenAI, Anthropic, or local models
+- **Response parsing** — turning raw LLM text into structured data
+- **Caching** — avoiding redundant (expensive) calls
+- **Streaming** — forwarding SSE streams to the frontend
+
+In Startopsy, every AI feature — BMC generation, competitor analysis, legal guidance, pitch deck builder — flows through this one service.
+
+## Architecture Overview
+
+```
+Frontend (Next.js)
+        │
+        ▼ HTTP / SSE
+Canvas Service (NestJS)
+        │
+        ▼ HTTP
+AI Orchestrator (FastAPI + LangChain)
+        │
+        ├──▶ OpenAI GPT-4
+        ├──▶ Anthropic Claude
+        └──▶ Redis (cache)
+```
+
+The orchestrator is **stateless** — it holds no database. All startup context is passed in the request, looked up from Redis cache, or fetched from the Canvas Service.
+
+## FastAPI Structure
+
+```
+ai-orchestrator/
+├── main.py
+├── routers/
+│   ├── bmc.py
+│   ├── competitors.py
+│   ├── legal.py
+│   └── roadmap.py
+├── chains/
+│   ├── bmc_chain.py
+│   ├── competitor_chain.py
+│   └── legal_chain.py
+├── prompts/
+│   ├── bmc_system.txt
+│   └── competitor_system.txt
+├── cache.py
+└── providers.py
+```
+
+## Provider Abstraction
+
+The key design decision: **abstract the LLM provider**. This lets you swap GPT-4 for Claude without touching feature code.
+
+```python
+# providers.py
+from langchain_openai import ChatOpenAI
+from langchain_anthropic import ChatAnthropic
+from functools import lru_cache
+
+@lru_cache()
+def get_llm(provider: str = "openai", temperature: float = 0.3):
+    if provider == "openai":
+        return ChatOpenAI(
+            model="gpt-4-turbo",
+            temperature=temperature,
+            api_key=settings.OPENAI_API_KEY
+        )
+    elif provider == "anthropic":
+        return ChatAnthropic(
+            model="claude-3-opus-20240229",
+            temperature=temperature,
+            api_key=settings.ANTHROPIC_API_KEY
+        )
+    raise ValueError(f"Unknown provider: {provider}")
+```
+
+## A LangChain Chain: BMC Generator
+
+```python
+# chains/bmc_chain.py
+from langchain.prompts import ChatPromptTemplate
+from langchain.output_parsers import PydanticOutputParser
+from pydantic import BaseModel
+
+class BMCOutput(BaseModel):
+    customer_segments: str
+    value_propositions: str
+    channels: str
+    customer_relationships: str
+    revenue_streams: str
+    key_resources: str
+    key_activities: str
+    key_partnerships: str
+    cost_structure: str
+
+parser = PydanticOutputParser(pydantic_object=BMCOutput)
+
+SYSTEM_PROMPT = open("prompts/bmc_system.txt").read()
+
+bmc_prompt = ChatPromptTemplate.from_messages([
+    ("system", SYSTEM_PROMPT + "\n\n{format_instructions}"),
+    ("human", """
+Startup Profile:
+Name: {name}
+Sector: {sector}
+Problem: {problem}
+Solution: {solution}
+Target Market: {target_market}
+
+Generate a complete Business Model Canvas.
+""")
+])
+
+def build_bmc_chain(provider="openai"):
+    llm = get_llm(provider)
+    return bmc_prompt | llm | parser
+```
+
+## Streaming Responses
+
+For the AI Co-founder chat, I stream tokens as they arrive:
+
+```python
+# routers/chat.py
+from fastapi.responses import StreamingResponse
+
+@router.post("/chat/stream")
+async def stream_chat(request: ChatRequest):
+    llm = get_llm("openai", temperature=0.7)
+    chain = build_chat_chain(request.startup_context)
+    
+    async def token_generator():
+        async for chunk in chain.astream({"message": request.message}):
+            yield f"data: {chunk.content}\n\n"
+        yield "data: [DONE]\n\n"
+    
+    return StreamingResponse(
+        token_generator(),
+        media_type="text/event-stream"
+    )
+```
+
+## Cache Integration
+
+```python
+# cache.py
+import hashlib, json
+from redis.asyncio import Redis
+
+redis = Redis.from_url(settings.REDIS_URL)
+
+def make_cache_key(feature: str, data: dict) -> str:
+    fingerprint = hashlib.sha256(json.dumps(data, sort_keys=True).encode()).hexdigest()
+    return f"ai:{feature}:{fingerprint}"
+
+async def get_or_generate(feature: str, input_data: dict, generator):
+    key = make_cache_key(feature, input_data)
+    cached = await redis.get(key)
+    
+    if cached:
+        return json.loads(cached)
+    
+    result = await generator()
+    await redis.setex(key, 3600, json.dumps(result))
+    return result
+```
+
+## Key Takeaways
+
+- **Abstract the LLM provider** — use a factory function, not hardcoded OpenAI calls
+- **Pydantic output parsers** turn LLM text into structured, type-safe Python objects
+- **Stateless design** makes horizontal scaling trivial — no session affinity required
+- Cache at the **semantic level** (same startup profile = same cache key), not HTTP level
+- Separate **chains** from **routers** — chains are reusable logic, routers are HTTP endpoints

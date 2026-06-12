@@ -1,0 +1,138 @@
+---
+title: "API Gateway Patterns for Microservices"
+summary: "Routing, auth, rate limiting — why your microservices shouldn't handle all that themselves. BFF pattern vs. a single gateway, and what I chose for Startopsy's architecture."
+publishedAt: "2026-06-05"
+tag: "System Design"
+---
+
+## The Problem with Direct Service Calls
+
+When Startopsy had one service, the frontend called it directly. When I split into four services, the frontend would need to know about all four endpoints, handle authentication for each, and manage cross-origin policies per service.
+
+That's an API Gateway problem.
+
+## What an API Gateway Does
+
+An API Gateway sits between clients and services. It handles:
+- **Routing** — forward `/api/ai/*` to the AI Orchestrator, `/api/auth/*` to Auth Service
+- **Authentication** — verify JWT once at the gateway, not in every service
+- **Rate limiting** — protect all services with one ruleset
+- **Request/response transformation** — normalize inconsistent APIs
+
+## Option 1: Single Gateway (nginx)
+
+For Startopsy's current scale, a single nginx gateway is more than enough:
+
+```nginx
+# nginx/nginx.conf
+upstream auth_service {
+    server auth-service:3001;
+}
+
+upstream ai_orchestrator {
+    server ai-orchestrator:8000;
+}
+
+upstream canvas_service {
+    server canvas-service:3002;
+}
+
+server {
+    listen 80;
+    server_name api.startopsy.internal;
+
+    # Rate limiting
+    limit_req_zone $binary_remote_addr zone=api:10m rate=20r/s;
+    limit_req zone=api burst=50 nodelay;
+
+    # Auth Service
+    location /api/auth/ {
+        proxy_pass http://auth_service/;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+
+    # AI Orchestrator — higher timeout for LLM calls
+    location /api/ai/ {
+        proxy_pass http://ai_orchestrator/;
+        proxy_read_timeout 60s;
+        proxy_set_header X-Real-IP $remote_addr;
+        
+        # Auth verification via subrequest
+        auth_request /internal/verify-token;
+    }
+
+    # Canvas Service
+    location /api/canvas/ {
+        proxy_pass http://canvas_service/;
+        auth_request /internal/verify-token;
+    }
+
+    # Internal auth verification endpoint
+    location = /internal/verify-token {
+        internal;
+        proxy_pass http://auth_service/verify;
+        proxy_pass_request_body off;
+        proxy_set_header Authorization $http_authorization;
+    }
+}
+```
+
+## Option 2: Backend for Frontend (BFF)
+
+The BFF pattern creates a gateway **tailored to a specific client** (web, mobile, CLI). The BFF aggregates calls from multiple services into single responses.
+
+```typescript
+// bff/routes/startup-dashboard.ts
+// One endpoint that aggregates 3 service calls
+router.get('/startup/:id/dashboard', async (req, res) => {
+  const { id } = req.params;
+
+  const [profile, bmc, competitors] = await Promise.all([
+    authService.getStartup(id),
+    canvasService.getBMC(id),
+    aiOrchestrator.getCompetitorSummary(id),
+  ]);
+
+  res.json({
+    profile,
+    bmc,
+    competitors,
+    generatedAt: new Date().toISOString(),
+  });
+});
+```
+
+The client makes **one request** instead of three. Network round-trips drop by 2/3.
+
+## What I Chose: Nginx + Next.js Route Handlers
+
+For Startopsy, I use:
+- **nginx** as the infrastructure gateway (routing, rate limiting, TLS termination)
+- **Next.js route handlers** as a lightweight BFF for the web client
+
+Next.js route handlers aggregate service calls before sending them to the browser:
+
+```typescript
+// app/api/canvas/[startupId]/bmc/route.ts
+export async function GET(req: Request, { params }: { params: { startupId: string } }) {
+  const token = req.headers.get('Authorization');
+  
+  // Verify token (gateway responsibility when running standalone)
+  const user = await verifyToken(token);
+  if (!user) return new Response('Unauthorized', { status: 401 });
+
+  // Call the Canvas Service internally
+  const bmc = await fetch(`${process.env.CANVAS_SERVICE_URL}/bmc/${params.startupId}`, {
+    headers: { 'X-User-Id': user.id }
+  });
+
+  return Response.json(await bmc.json());
+}
+```
+
+## Key Takeaways
+
+- **Don't skip a gateway** — auth and rate limiting in every service is a maintenance nightmare
+- **nginx is sufficient** until you have 10+ services or team-specific API consumers
+- Use the **BFF pattern** when your client needs data aggregated from multiple services
+- **Never expose service URLs directly** to the browser — all traffic goes through the gateway
