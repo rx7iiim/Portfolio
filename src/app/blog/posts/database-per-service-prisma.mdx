@@ -1,0 +1,149 @@
+---
+title: "Database-per-Service: Prisma & Isolation"
+summary: "One of the hardest parts of Startopsy's migration: splitting a shared PostgreSQL schema so each service owns its own data. Foreign keys across services, and how event sourcing replaces them."
+publishedAt: "2026-06-05"
+tag: "System Design"
+---
+
+## The Shared Database Trap
+
+When Startopsy was a monolith, one PostgreSQL database served everything. User records, startup profiles, BMC data, competitor analyses — all in one schema, joined freely.
+
+When I split into microservices, the temptation was to keep sharing that database. **Don't do it.**
+
+A shared database defeats the purpose of microservices:
+- Services can't be deployed independently (schema changes break others)
+- You can't scale storage per service
+- One service's slow query can impact all others
+
+## Database-per-Service in Practice
+
+Each service owns its schema:
+
+```
+postgres-auth/           # auth-service owns this
+├── users
+├── sessions  
+└── refresh_tokens
+
+postgres-canvas/         # canvas-service owns this
+├── startup_profiles
+├── bmc_documents
+├── roadmaps
+└── pitch_decks
+
+postgres-ai/             # ai-orchestrator owns this
+├── ai_call_logs
+├── cached_responses
+└── token_usage
+```
+
+In Docker Compose, separate databases:
+
+```yaml
+postgres-auth:
+  image: postgres:16-alpine
+  environment:
+    POSTGRES_DB: auth_db
+    POSTGRES_PASSWORD: ${AUTH_DB_PASS}
+  volumes:
+    - auth_data:/var/lib/postgresql/data
+
+postgres-canvas:
+  image: postgres:16-alpine
+  environment:
+    POSTGRES_DB: canvas_db
+    POSTGRES_PASSWORD: ${CANVAS_DB_PASS}
+  volumes:
+    - canvas_data:/var/lib/postgresql/data
+```
+
+## Prisma per Service
+
+Each service has its own `prisma/schema.prisma`:
+
+```prisma
+// canvas-service/prisma/schema.prisma
+datasource db {
+  provider = "postgresql"
+  url      = env("CANVAS_DATABASE_URL")
+}
+
+model StartupProfile {
+  id          String   @id @default(uuid())
+  // Note: no foreign key to User — only userId (a reference, not a join)
+  userId      String
+  name        String
+  sector      String
+  createdAt   DateTime @default(now())
+  
+  bmcDocuments BMCDocument[]
+}
+
+model BMCDocument {
+  id        String         @id @default(uuid())
+  profileId String
+  profile   StartupProfile @relation(fields: [profileId], references: [id])
+  content   Json
+  createdAt DateTime       @default(now())
+}
+```
+
+Notice: `userId` is a **reference** (a plain string), not a foreign key to a `users` table. Cross-service relationships are never enforced by the database.
+
+## Replacing Foreign Keys with Events
+
+The hardest part: when a user is deleted, the canvas-service needs to delete their startup profiles. But there's no foreign key to cascade.
+
+The solution is **domain events via Redis Pub/Sub**:
+
+```typescript
+// auth-service: publish event when user is deleted
+await userRepository.delete(userId);
+await redis.publish('user:deleted', JSON.stringify({ userId }));
+
+// canvas-service: subscribe and clean up
+redis.subscribe('user:deleted', async (message) => {
+  const { userId } = JSON.parse(message);
+  await prisma.startupProfile.deleteMany({ where: { userId } });
+});
+```
+
+This is **eventual consistency** — the canvas-service cleanup happens asynchronously. For most use cases, a few milliseconds of delay is acceptable.
+
+## The Saga Pattern for Multi-Service Transactions
+
+When creating a startup requires both auth-service and canvas-service changes:
+
+```typescript
+// Saga orchestrator in canvas-service
+async function createStartupSaga(userId: string, profileData: CreateProfileDTO) {
+  const sagaId = uuid();
+  
+  try {
+    // Step 1: Create profile in canvas-service
+    const profile = await prisma.startupProfile.create({
+      data: { userId, ...profileData, sagaId }
+    });
+
+    // Step 2: Notify auth-service to link startup
+    await redis.publish('startup:created', JSON.stringify({ 
+      sagaId, userId, profileId: profile.id 
+    }));
+
+    return profile;
+  } catch (error) {
+    // Compensate: publish rollback event
+    await redis.publish('startup:create:failed', JSON.stringify({ sagaId, userId }));
+    throw error;
+  }
+}
+```
+
+## Key Takeaways
+
+- **Database-per-service is non-negotiable** for true microservice independence
+- Cross-service references are **IDs, not foreign keys**
+- Use **domain events (Pub/Sub)** to replace cascade operations
+- **Sagas** handle multi-service transactions — compensating transactions on failure
+- Accept **eventual consistency** for non-critical cross-service data

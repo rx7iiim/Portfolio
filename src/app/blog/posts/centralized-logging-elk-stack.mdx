@@ -1,0 +1,137 @@
+---
+title: "Centralized Logging with the ELK Stack"
+summary: "When five services write logs to five different places, debugging becomes archaeology. Elasticsearch + Logstash + Kibana for a multi-container Startopsy environment."
+publishedAt: "2026-06-05"
+tag: "DevOps"
+---
+
+## The Problem: Log Archaeology
+
+Before ELK, debugging a failed AI feature required SSHing into multiple containers and grepping through logs manually. A single user request touched the frontend, auth-service, and ai-orchestrator — and their logs lived in three separate places.
+
+ELK centralizes everything.
+
+## Stack Overview
+
+- **Elasticsearch** — stores and indexes logs
+- **Logstash** — ingests, transforms, and ships logs
+- **Kibana** — visualizes and searches logs
+- **Filebeat** — lightweight log shipper that runs alongside each service
+
+## Docker Compose Setup
+
+```yaml
+services:
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.12.0
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+    ports: ['9200:9200']
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
+
+  logstash:
+    image: docker.elastic.co/logstash/logstash:8.12.0
+    volumes:
+      - ./monitoring/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+    depends_on: [elasticsearch]
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.12.0
+    ports: ['5601:5601']
+    environment:
+      ELASTICSEARCH_HOSTS: http://elasticsearch:9200
+    depends_on: [elasticsearch]
+
+  filebeat:
+    image: docker.elastic.co/beats/filebeat:8.12.0
+    user: root
+    volumes:
+      - ./monitoring/filebeat.yml:/usr/share/filebeat/filebeat.yml
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    depends_on: [logstash]
+
+volumes:
+  es_data:
+```
+
+## Logstash Pipeline
+
+```conf
+# monitoring/logstash.conf
+input {
+  beats {
+    port => 5044
+  }
+}
+
+filter {
+  json {
+    source => "message"
+    target => "parsed"
+    skip_on_invalid_json => true
+  }
+
+  if [parsed][level] {
+    mutate {
+      add_field => { "log_level" => "%{[parsed][level]}" }
+    }
+  }
+}
+
+output {
+  elasticsearch {
+    hosts => ["http://elasticsearch:9200"]
+    index => "startopsy-logs-%{+YYYY.MM.dd}"
+  }
+}
+```
+
+## Structured Logging in NestJS
+
+Filebeat ships raw container logs. To make them searchable, log in JSON:
+
+```typescript
+// auth-service/src/logger.ts
+import { createLogger, format, transports } from 'winston';
+
+export const logger = createLogger({
+  format: format.combine(
+    format.timestamp(),
+    format.json()
+  ),
+  transports: [new transports.Console()]
+});
+
+// Usage
+logger.info('User authenticated', {
+  userId: user.id,
+  requestId: req.headers['x-request-id'],
+  duration: Date.now() - startTime
+});
+```
+
+## Kibana Queries That Actually Help
+
+Once logs are in Kibana, these queries saved me hours:
+
+```
+# All errors from a specific service
+service.name: "ai-orchestrator" AND log_level: "error"
+
+# Trace a full request across services
+parsed.requestId: "abc-123"
+
+# Slow LLM calls
+parsed.feature: "bmc-generator" AND parsed.duration > 10000
+```
+
+## Key Takeaways
+
+- **Structured JSON logging** is mandatory — plain text logs are unsearchable at scale
+- **Propagate request IDs** across services so you can trace a full request in Kibana
+- **Index by date** (`startopsy-logs-2026.06.05`) for easy retention management
+- Start with a **daily rollover** index pattern and add ILM policies when log volume grows

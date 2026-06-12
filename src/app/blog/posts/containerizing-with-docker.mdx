@@ -1,0 +1,147 @@
+---
+title: "Containerizing Microservices with Docker"
+summary: "Multi-stage Dockerfiles, layer caching tricks that cut build times in half, and how Docker Compose ties all Startopsy services together in one command."
+publishedAt: "2026-05-15"
+tag: "Docker"
+---
+
+## The Problem with One Container
+
+When Startopsy was a Next.js monolith, one `Dockerfile` was enough. When I split into microservices — `auth-service` (NestJS), `ai-orchestrator` (FastAPI), `canvas-service` (NestJS), `legal-service` (FastAPI) — I needed a container strategy for each.
+
+Here's what I learned.
+
+## Multi-Stage Dockerfiles
+
+The most important optimization is multi-stage builds. They let you use a heavy build image and copy only what's needed into a lean production image.
+
+**NestJS service (auth-service):**
+
+```dockerfile
+# Stage 1: Build
+FROM node:20-alpine AS builder
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci
+COPY . .
+RUN npm run build
+
+# Stage 2: Production
+FROM node:20-alpine AS runner
+WORKDIR /app
+ENV NODE_ENV=production
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/package.json .
+
+EXPOSE 3001
+CMD ["node", "dist/main.js"]
+```
+
+**FastAPI service (ai-orchestrator):**
+
+```dockerfile
+FROM python:3.11-slim AS deps
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+FROM python:3.11-slim AS runner
+WORKDIR /app
+COPY --from=deps /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
+COPY . .
+
+EXPOSE 8000
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+```
+
+## Layer Caching Tricks
+
+Docker builds each `RUN`, `COPY`, and `ADD` instruction as a layer. If nothing changes for a layer, Docker reuses the cache — skipping that step entirely.
+
+**The trick:** copy `package.json` before your source code.
+
+```dockerfile
+# ✅ Correct — dependencies cached separately from source
+COPY package*.json ./
+RUN npm ci          # ← cached unless package.json changes
+COPY . .            # ← source changes don't bust the dep cache
+
+# ❌ Wrong — every source change reinstalls all dependencies  
+COPY . .
+RUN npm ci
+```
+
+This single change cut my `auth-service` build from 3 minutes to 25 seconds.
+
+## Docker Compose: Tying It All Together
+
+```yaml
+# docker-compose.yml
+version: '3.9'
+
+services:
+  frontend:
+    build: ./frontend
+    ports: ['3000:3000']
+    depends_on: [auth-service, ai-orchestrator]
+
+  auth-service:
+    build: ./services/auth-service
+    ports: ['3001:3001']
+    environment:
+      DATABASE_URL: postgresql://postgres:secret@postgres:5432/auth
+    depends_on: [postgres]
+
+  ai-orchestrator:
+    build: ./services/ai-orchestrator
+    ports: ['8000:8000']
+    environment:
+      REDIS_URL: redis://redis:6379
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+    depends_on: [redis]
+
+  canvas-service:
+    build: ./services/canvas-service
+    ports: ['3002:3002']
+    depends_on: [postgres]
+
+  postgres:
+    image: postgres:16-alpine
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_PASSWORD: secret
+
+  redis:
+    image: redis:7-alpine
+
+volumes:
+  postgres_data:
+```
+
+One command starts everything:
+
+```bash
+docker compose up --build
+```
+
+## Health Checks
+
+Always add health checks. They let Docker Compose and Kubernetes know when a service is actually ready:
+
+```yaml
+auth-service:
+  healthcheck:
+    test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
+    interval: 10s
+    timeout: 5s
+    retries: 3
+```
+
+## Key Takeaways
+
+- **Multi-stage builds** keep production images lean (NestJS: 1.2GB → 180MB)
+- **Layer ordering matters** — dependencies before source code
+- **Docker Compose** is your local Kubernetes for development
+- **Health checks** prevent dependent services from starting before their dependencies are ready

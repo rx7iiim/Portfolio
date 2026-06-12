@@ -1,0 +1,127 @@
+---
+title: "Implementing CI/CD with Jenkins"
+summary: "From pushing code to deploying containers — automating the pipeline that runs every time I commit to Startopsy. Jenkinsfile anatomy, Docker build stages, and pushing to a private registry."
+publishedAt: "2026-05-08"
+tag: "DevOps"
+---
+
+## Why Jenkins Over GitHub Actions?
+
+When I started automating Startopsy's CI/CD, GitHub Actions was the obvious choice. It's free, integrated, and well-documented. But I chose Jenkins for one reason: **self-hosted control**.
+
+Running Jenkins on a VPS means no per-minute billing, no secret limits, and full control over the build environment. For a startup building on a budget, this matters.
+
+## Jenkinsfile Anatomy
+
+Every Startopsy service has a `Jenkinsfile` at its root. Here's the one for `ai-orchestrator`:
+
+```groovy
+pipeline {
+  agent any
+
+  environment {
+    IMAGE_NAME = "startopsy/ai-orchestrator"
+    REGISTRY   = "registry.startopsy.internal"
+  }
+
+  stages {
+    stage('Checkout') {
+      steps {
+        checkout scm
+      }
+    }
+
+    stage('Install') {
+      steps {
+        sh 'pip install -r requirements.txt'
+      }
+    }
+
+    stage('Test') {
+      steps {
+        sh 'pytest tests/ -v'
+      }
+    }
+
+    stage('Build Image') {
+      steps {
+        sh """
+          docker build -t ${REGISTRY}/${IMAGE_NAME}:${BUILD_NUMBER} .
+          docker tag ${REGISTRY}/${IMAGE_NAME}:${BUILD_NUMBER} ${REGISTRY}/${IMAGE_NAME}:latest
+        """
+      }
+    }
+
+    stage('Push') {
+      steps {
+        withCredentials([usernamePassword(
+          credentialsId: 'registry-creds',
+          usernameVariable: 'USER',
+          passwordVariable: 'PASS'
+        )]) {
+          sh """
+            echo $PASS | docker login ${REGISTRY} -u $USER --password-stdin
+            docker push ${REGISTRY}/${IMAGE_NAME}:${BUILD_NUMBER}
+            docker push ${REGISTRY}/${IMAGE_NAME}:latest
+          """
+        }
+      }
+    }
+
+    stage('Deploy') {
+      steps {
+        sh 'docker compose -f docker-compose.prod.yml up -d ai-orchestrator'
+      }
+    }
+  }
+
+  post {
+    failure {
+      mail to: 'azine@estin.dz',
+           subject: "Pipeline failed: ${JOB_NAME}",
+           body: "Build ${BUILD_NUMBER} failed."
+    }
+  }
+}
+```
+
+## Multi-Stage Docker Builds
+
+The key to fast pipelines is a proper multi-stage Dockerfile. Here's the `ai-orchestrator` one:
+
+```dockerfile
+# Stage 1: dependencies
+FROM python:3.11-slim AS deps
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Stage 2: production
+FROM python:3.11-slim AS runner
+WORKDIR /app
+COPY --from=deps /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
+COPY . .
+
+EXPOSE 8000
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+```
+
+By separating dependency installation from the app copy, Docker layer caching ensures that unchanged dependencies are never re-downloaded. Pipeline time: **4 minutes → 90 seconds**.
+
+## Triggering on Push
+
+Jenkins polls the monorepo every 2 minutes, but only triggers builds for services affected by a change using a path filter:
+
+```groovy
+triggers {
+  pollSCM('H/2 * * * *')
+}
+
+when {
+  changeset "services/ai-orchestrator/**"
+}
+```
+
+## Conclusion
+
+Jenkins + Docker + a private registry gives you a production-grade CI/CD pipeline for the cost of a $5/month VPS. The Jenkinsfile-as-code pattern means your pipeline is version-controlled alongside your service — exactly how it should be.
