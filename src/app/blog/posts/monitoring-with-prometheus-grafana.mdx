@@ -1,0 +1,124 @@
+---
+title: "Monitoring with Prometheus & Grafana"
+summary: "What does 'my service is healthy' actually mean? Setting up metrics scraping, building Grafana dashboards for the AI Orchestrator, and alerting before users notice something's wrong."
+publishedAt: "2026-05-29"
+tag: "DevOps"
+---
+
+## What Does "Healthy" Actually Mean?
+
+Before Prometheus, I knew my service was healthy because it wasn't throwing 500s. That's not monitoring — that's hoping. Real observability means knowing **before** users complain.
+
+## Setting Up Prometheus
+
+```yaml
+# docker-compose.monitoring.yml
+services:
+  prometheus:
+    image: prom/prometheus:latest
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+    ports: ['9090:9090']
+
+  grafana:
+    image: grafana/grafana:latest
+    ports: ['3001:3000']
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    volumes:
+      - grafana_data:/var/lib/grafana
+
+volumes:
+  grafana_data:
+```
+
+```yaml
+# monitoring/prometheus.yml
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: 'ai-orchestrator'
+    static_configs:
+      - targets: ['ai-orchestrator:8000']
+    metrics_path: '/metrics'
+
+  - job_name: 'auth-service'
+    static_configs:
+      - targets: ['auth-service:3001']
+    metrics_path: '/metrics'
+```
+
+## Exposing Metrics from FastAPI
+
+```python
+# ai-orchestrator/main.py
+from prometheus_fastapi_instrumentator import Instrumentator
+
+app = FastAPI()
+Instrumentator().instrument(app).expose(app)
+```
+
+One import. Prometheus now scrapes request count, latency histograms, and error rates.
+
+## Custom Metrics for AI Calls
+
+Standard HTTP metrics aren't enough for an AI service. I added custom metrics for LLM call duration and token usage:
+
+```python
+from prometheus_client import Histogram, Counter
+
+llm_call_duration = Histogram(
+    'llm_call_duration_seconds',
+    'Time spent on LLM API calls',
+    buckets=[0.5, 1, 2, 5, 10, 30]
+)
+
+llm_tokens_used = Counter(
+    'llm_tokens_total',
+    'Total tokens consumed',
+    ['model', 'feature']
+)
+
+# In your LLM call handler:
+with llm_call_duration.time():
+    response = await call_llm(prompt)
+    llm_tokens_used.labels(model='gpt-4', feature='bmc-generator').inc(response.usage.total_tokens)
+```
+
+## Grafana Dashboards
+
+Key panels I built for the AI Orchestrator:
+
+- **Request rate** — `rate(http_requests_total[5m])`
+- **Error rate** — `rate(http_requests_total{status=~"5.."}[5m])`
+- **P95 latency** — `histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m]))`
+- **LLM call duration P99** — `histogram_quantile(0.99, rate(llm_call_duration_seconds_bucket[5m]))`
+- **Token burn rate** — `rate(llm_tokens_total[1h])`
+
+## Alerting
+
+```yaml
+# monitoring/alert-rules.yml
+groups:
+  - name: startopsy
+    rules:
+      - alert: HighErrorRate
+        expr: rate(http_requests_total{status=~"5.."}[5m]) > 0.05
+        for: 2m
+        annotations:
+          summary: "Error rate above 5% for 2 minutes"
+
+      - alert: SlowLLMCalls
+        expr: histogram_quantile(0.95, rate(llm_call_duration_seconds_bucket[5m])) > 15
+        for: 5m
+        annotations:
+          summary: "P95 LLM latency above 15 seconds"
+```
+
+## Key Takeaways
+
+- **Instrument at the framework level** first (FastAPI instrumentator, NestJS prometheus client)
+- **Custom metrics** are where the real insight lives — especially for AI workloads
+- **Alert on rate, not count** — `rate(errors[5m]) > 0.05` is far more useful than `errors > 100`
+- Track **token burn rate** from day one — LLM costs can spike silently

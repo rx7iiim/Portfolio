@@ -1,0 +1,104 @@
+---
+title: "Designing Startopsy — From Monolith to Microservices"
+summary: "Why Startopsy started as a Next.js monolith, when it stopped being enough, and how I identified the AI Orchestrator as the right first service to extract."
+publishedAt: "2026-06-05"
+tag: "System Design"
+---
+
+## Why Start with a Monolith?
+
+Every "microservices vs monolith" debate ignores the most important factor: **where you are in the product lifecycle**.
+
+Startopsy v1 was a Next.js monolith. All features — auth, BMC generation, competitor analysis, legal guidance — lived in a single codebase with one database. This was the right call at the time.
+
+**Monolith advantages at early stage:**
+- One deployment pipeline
+- No network latency between features
+- Shared database = simple queries (no distributed joins)
+- One codebase to reason about
+
+## When the Monolith Started Breaking
+
+Three things happened simultaneously:
+
+1. **AI features got slow.** BMC generation takes 8–15 seconds. That's a blocking operation in a Next.js server action that blocks the entire route.
+
+2. **AI dependencies conflicted.** The LangChain Python library doesn't exist in JavaScript in the same form. Running Python AI logic inside a Node.js monolith requires ugly subprocess hacks.
+
+3. **Scaling became asymmetric.** The frontend and auth features are CPU-light. The AI features need more memory for model contexts and longer timeouts. Scaling the whole monolith to serve AI workloads is wasteful.
+
+## Identifying the First Service to Extract
+
+The question wasn't "should we extract a service?" — it was "which one?"
+
+I used three criteria:
+
+1. **Highest isolation benefit** — which feature suffers most from being in the monolith?
+2. **Cleanest API boundary** — which feature has the simplest, most stable interface?
+3. **Different scaling requirements** — which feature needs to scale differently?
+
+The AI Orchestrator scored highest on all three. It's slow, it needs Python, and it needs memory-based scaling — not CPU-based scaling.
+
+## The Extraction Plan
+
+```
+Before:
+Next.js monolith
+├── /api/bmc-generate      → calls OpenAI directly
+├── /api/competitor-analyze → calls OpenAI directly  
+├── /api/legal-guidance    → calls Anthropic directly
+└── /api/auth              → NextAuth
+
+After:
+┌─────────────────────┐      ┌──────────────────────┐
+│   Next.js Frontend  │ ────▶│  AI Orchestrator      │
+│   + Auth (NestJS)   │      │  (FastAPI + LangChain)│
+└─────────────────────┘      └──────────────────────┘
+                                        │
+                              ┌─────────▼──────────┐
+                              │  Canvas Service     │
+                              │  (NestJS)           │
+                              └────────────────────┘
+```
+
+## The Interface Contract
+
+Before writing a line of FastAPI, I defined the contract:
+
+```typescript
+// packages/shared-types/src/ai.types.ts
+interface BMCGenerateRequest {
+  startupId: string;
+  profile: StartupProfile;
+}
+
+interface BMCGenerateResponse {
+  segments: {
+    customerSegments: string;
+    valuePropositions: string;
+    channels: string;
+    customerRelationships: string;
+    revenueStreams: string;
+    keyResources: string;
+    keyActivities: string;
+    keyPartnerships: string;
+    costStructure: string;
+  };
+  generatedAt: string;
+}
+```
+
+The FastAPI service implements this contract. The Next.js frontend calls it. The contract is the boundary.
+
+## What I'd Do Differently
+
+1. **Define OpenAPI specs before implementation** — contract-first development prevents interface drift
+2. **Extract the database at the same time as the service** — shared databases are a trap
+3. **Add distributed tracing on day one** — Jaeger or Tempo, not console.log
+
+## Key Takeaways
+
+- Start with a monolith. Extract when a specific feature has asymmetric scaling, conflicting dependencies, or a clean API boundary
+- The **AI Orchestrator** was the right first extraction: Python dependency, slow operations, memory-bound scaling
+- Define the **interface contract before** writing the new service
+- Share types via a **packages/** directory, not by copy-pasting

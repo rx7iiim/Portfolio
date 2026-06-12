@@ -1,0 +1,136 @@
+---
+title: "Redis for Startups — Cache, Queue, Pub/Sub"
+summary: "Redis isn't just a cache. I use it in Startopsy for AI response caching, job queues between microservices, and real-time competitor analysis streaming. Three use cases, one tool."
+publishedAt: "2026-06-05"
+tag: "Redis"
+---
+
+## Redis Isn't Just a Cache
+
+Most tutorials show Redis as a key-value cache in front of a database. That's fine, but it undersells the tool. In Startopsy, Redis serves three completely different roles:
+
+1. **AI response caching** — avoiding redundant LLM calls
+2. **Job queues** — async task processing between microservices  
+3. **Pub/Sub streaming** — real-time competitor analysis updates
+
+Here's how each one works.
+
+## Use Case 1: AI Response Caching
+
+LLM API calls are expensive (~$0.03–0.06 per BMC generation). If two users ask for the same analysis, we should serve the second from cache.
+
+```typescript
+// ai-orchestrator/cache.service.ts
+import { Redis } from 'ioredis';
+
+const redis = new Redis(process.env.REDIS_URL);
+
+export async function getCachedResponse(key: string): Promise<string | null> {
+  return redis.get(key);
+}
+
+export async function setCachedResponse(
+  key: string,
+  value: string,
+  ttlSeconds = 3600
+): Promise<void> {
+  await redis.setex(key, ttlSeconds, value);
+}
+
+// Cache key based on the startup's diagnostic fingerprint
+const cacheKey = `bmc:${hash(startupProfile)}`;
+const cached = await getCachedResponse(cacheKey);
+
+if (cached) {
+  return JSON.parse(cached); // Serve from cache, no LLM call
+}
+
+const result = await generateBMC(startupProfile);
+await setCachedResponse(cacheKey, JSON.stringify(result));
+return result;
+```
+
+**Result:** LLM API costs dropped 40% after the first week of real users.
+
+## Use Case 2: Job Queues with BullMQ
+
+Competitor analysis is slow (scraping + LLM synthesis = 20–40 seconds). Users shouldn't wait. I push it to a background queue.
+
+```typescript
+// In canvas-service: enqueue the job
+import { Queue } from 'bullmq';
+
+const competitorQueue = new Queue('competitor-analysis', {
+  connection: { host: 'redis', port: 6379 }
+});
+
+await competitorQueue.add('analyze', {
+  startupId,
+  sector,
+  valueProposition
+});
+
+// Return immediately to the user
+return { status: 'queued', jobId };
+```
+
+```typescript
+// In ai-orchestrator: process the job
+import { Worker } from 'bullmq';
+
+const worker = new Worker('competitor-analysis', async (job) => {
+  const { startupId, sector, valueProposition } = job.data;
+  const result = await analyzeCompetitors(sector, valueProposition);
+  
+  // Notify via pub/sub that analysis is ready
+  await redis.publish(`competitor:done:${startupId}`, JSON.stringify(result));
+}, { connection: { host: 'redis', port: 6379 } });
+```
+
+## Use Case 3: Pub/Sub for Real-Time Updates
+
+When the background job finishes, the frontend needs to know. Instead of polling, I use Redis Pub/Sub + Server-Sent Events.
+
+```typescript
+// Next.js API route: stream results to client
+export async function GET(req: Request) {
+  const { startupId } = await req.json();
+  
+  const stream = new ReadableStream({
+    start(controller) {
+      const subscriber = new Redis(process.env.REDIS_URL);
+      
+      subscriber.subscribe(`competitor:done:${startupId}`, (err) => {
+        if (err) controller.error(err);
+      });
+
+      subscriber.on('message', (channel, message) => {
+        controller.enqueue(`data: ${message}\n\n`);
+        controller.close();
+        subscriber.quit();
+      });
+    }
+  });
+
+  return new Response(stream, {
+    headers: { 'Content-Type': 'text/event-stream' }
+  });
+}
+```
+
+## Redis Data Structures Worth Knowing
+
+| Structure | Startopsy Use Case |
+|-----------|-------------------|
+| `STRING` | AI response cache, session tokens |
+| `HASH` | User session data |
+| `LIST` | Simple FIFO queues |
+| `SORTED SET` | Rate limiting (sliding window) |
+| `STREAM` | Audit log events |
+
+## Key Takeaways
+
+- Redis is a **multi-tool** — cache, queue, and pub/sub in one dependency
+- Use **TTL on every cache key** — unbounded caches cause memory exhaustion
+- **BullMQ** is the best Redis queue library for Node.js/TypeScript
+- Pub/Sub + SSE gives you **real-time updates** without WebSocket complexity

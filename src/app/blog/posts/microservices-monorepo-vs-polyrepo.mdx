@@ -1,0 +1,99 @@
+---
+title: "Setting Up Microservices Repositories — Monorepo vs Polyrepo"
+summary: "When I started migrating Startopsy from a monolith to microservices, the first question wasn't Docker or Kubernetes — it was: where do all these repos live?"
+publishedAt: "2026-05-01"
+tag: "DevOps"
+---
+
+## The Question Nobody Talks About
+
+Every microservices tutorial starts with Docker or Kubernetes. But before you write a single Dockerfile, you face a more fundamental decision: **where do all these repos live?**
+
+When I started splitting Startopsy into services, I had four options:
+- **Monorepo** — all services in one repository
+- **Polyrepo** — each service has its own repository
+- **Hybrid** — some services grouped, others separate
+
+Here's exactly how I thought through it.
+
+## The Startopsy Context
+
+Startopsy's microservices breakdown looked like this:
+
+```
+startopsy/
+├── services/
+│   ├── ai-orchestrator/     # LangChain + FastAPI
+│   ├── auth-service/        # NestJS + JWT
+│   ├── canvas-service/      # BMC, Roadmap, Pre-Mortem
+│   └── legal-service/       # Algeria-specific legal guidance
+├── packages/
+│   ├── shared-types/        # TypeScript interfaces shared across services
+│   └── ui-components/       # Shared React components
+├── docker-compose.yml
+└── turbo.json
+```
+
+Four services, two shared packages. The decision mattered.
+
+## Why I Chose Monorepo
+
+**1. Shared Types Without Publishing**
+
+The biggest pain with polyrepo is sharing TypeScript types. With a monorepo and Turborepo, `packages/shared-types` is available to every service without publishing to npm. A type change in one service immediately surfaces errors in all consumers.
+
+**2. Atomic Commits**
+
+When the `AuthService` changes a JWT payload shape, the `ai-orchestrator` that consumes it needs to update too. With monorepo, that's one commit. With polyrepo, it's a versioned release, a dependency bump PR, and a second merge. For a solo developer, that overhead is brutal.
+
+**3. CI/CD Simplicity with Turborepo**
+
+Turborepo's `--filter` flag lets you build and test only the services affected by a change:
+
+```bash
+turbo run build --filter=ai-orchestrator...
+```
+
+This gives you polyrepo-style isolation in CI without the repo fragmentation.
+
+## When Polyrepo Makes Sense
+
+Polyrepo wins when:
+- Teams are large and need hard ownership boundaries
+- Services have wildly different tech stacks
+- You need fine-grained access control per repo
+
+For Startopsy's stage, none of these applied.
+
+## The Setup
+
+```bash
+# Init with Turborepo
+npx create-turbo@latest
+
+# Structure your apps and packages
+mkdir -p services/{ai-orchestrator,auth-service,canvas-service,legal-service}
+mkdir -p packages/{shared-types,ui-components}
+```
+
+```json
+// turbo.json
+{
+  "pipeline": {
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": ["dist/**"]
+    },
+    "dev": {
+      "cache": false,
+      "persistent": true
+    }
+  }
+}
+```
+
+## Conclusion
+
+For an early-stage AI platform built by a small team, the monorepo is the clear winner. The shared types, atomic commits, and Turborepo CI pipeline make the development experience dramatically smoother.
+
+Start with a monorepo. You can always split later when you actually have the team size that justifies polyrepo.

@@ -1,0 +1,132 @@
+---
+title: "Deploying to Kubernetes"
+summary: "Pods, Deployments, Services, and Ingress — explained through actually deploying Startopsy's AI Orchestrator. Plus why I used LocalStack before touching a real AWS account."
+publishedAt: "2026-05-22"
+tag: "DevOps"
+---
+
+## Why Kubernetes (and Why Not Yet)
+
+Kubernetes is overkill for most early-stage startups. But learning it on a real project is invaluable. Startopsy uses K8s in staging, Docker Compose in local dev. Here's what I learned deploying the `ai-orchestrator`.
+
+## The Four Objects You Need to Know
+
+**1. Pod** — the smallest deployable unit. One or more containers that share networking and storage.
+
+**2. Deployment** — manages Pods. Handles rolling updates, restarts on failure, and scaling.
+
+**3. Service** — stable network endpoint for a set of Pods. Pods die and restart with new IPs; Services stay stable.
+
+**4. Ingress** — routes external HTTP(S) traffic to internal Services.
+
+## Deploying ai-orchestrator
+
+```yaml
+# ai-orchestrator-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ai-orchestrator
+  namespace: startopsy
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: ai-orchestrator
+  template:
+    metadata:
+      labels:
+        app: ai-orchestrator
+    spec:
+      containers:
+        - name: ai-orchestrator
+          image: registry.startopsy.internal/ai-orchestrator:latest
+          ports:
+            - containerPort: 8000
+          env:
+            - name: OPENAI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: ai-secrets
+                  key: openai-api-key
+            - name: REDIS_URL
+              value: redis://redis-service:6379
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 15
+            periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ai-orchestrator-service
+  namespace: startopsy
+spec:
+  selector:
+    app: ai-orchestrator
+  ports:
+    - port: 80
+      targetPort: 8000
+```
+
+## Secrets Management
+
+Never hardcode secrets. Store them in Kubernetes Secrets:
+
+```bash
+kubectl create secret generic ai-secrets \
+  --from-literal=openai-api-key=$OPENAI_API_KEY \
+  -n startopsy
+```
+
+## Ingress with nginx
+
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: startopsy-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+    - host: api.startopsy.internal
+      http:
+        paths:
+          - path: /ai
+            pathType: Prefix
+            backend:
+              service:
+                name: ai-orchestrator-service
+                port:
+                  number: 80
+```
+
+## Why LocalStack First
+
+Before touching real AWS EKS, I ran everything against **LocalStack** — a local AWS cloud emulator. It lets you test IAM, S3, SQS, and ECR integrations without spending money or risking production.
+
+```bash
+pip install localstack
+localstack start
+
+# Push to local ECR
+aws --endpoint-url=http://localhost:4566 ecr create-repository \
+  --repository-name ai-orchestrator
+```
+
+## Key Takeaways
+
+- Start with `kubectl apply -f` before Helm charts
+- Resource limits (`requests`/`limits`) prevent one service from killing the node
+- Use LocalStack before touching real AWS — it saves money and surprises
+- Liveness + Readiness probes are not optional
