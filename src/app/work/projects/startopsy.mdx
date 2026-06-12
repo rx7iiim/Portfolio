@@ -2,30 +2,67 @@
 title: "Startopsy"
 publishedAt: "2026-06-05"
 order: 1
-summary: "A platform available at startopsy.vercel.app."
+summary: "An AI-powered startup diagnostic and co-pilot platform built specifically for the Algerian and MENA startup ecosystem."
 images:
-  - "/images/projects/project-01/cover-01.jpg"
+  - "/images/projects/startopsy/Screenshot 2026-06-12 032255.png"
+  - "/images/projects/startopsy/Screenshot 2026-06-12 032318.png"
+  - "/images/projects/startopsy/Screenshot 2026-06-12 032335.png"
+  - "/images/projects/startopsy/Screenshot 2026-06-12 032351.png"
+  - "/images/projects/startopsy/Screenshot 2026-06-12 032408.png"
 link: "https://startopsy.vercel.app"
 ---
 
-## Overview
+## Executive Summary
 
-Startopsy is a web platform designed to provide valuable insights and tools for startups. Built with a focus on usability and performance, it helps entrepreneurs and founders make data-driven decisions.
+Startopsy is an AI-powered startup diagnostic and co-pilot platform built specifically for the Algerian and MENA startup ecosystem. The name fuses startup and autopsy — the idea being a full, honest dissection of a startup's health, risks, and potential before it fails rather than after. It provides early-stage founders with a structured AI-assisted framework to validate, plan, and execute their startup from a single platform — filling a gap that generic tools like Notion or ChatGPT cannot fill alone.
 
-## Key Features
+The MVP was built as a full-stack web application using Next.js 14 (App Router), TypeScript, Prisma ORM, PostgreSQL, NextAuth, and Tailwind CSS with shadcn/ui, with AI features powered by calls to an external LLM provider.
 
-- **Dashboard Analytics**: Real-time analytics and metrics to track startup growth and performance.
-- **User-Friendly Interface**: Clean, intuitive design that makes complex data easy to understand.
-- **Scalable Architecture**: Built to handle growing user bases and increasing data loads.
-- **Responsive Design**: Fully optimized for desktop and mobile devices.
+## Problem Statement
 
-## Technologies Used
+Algerian founders face a specific set of compounding challenges that tools designed for Silicon Valley startups do not address:
 
-- **Next.js**: For server-side rendering and optimal performance.
-- **TypeScript**: Ensuring type safety and maintainable code.
-- **Tailwind CSS**: For rapid, consistent UI development.
-- **Vercel**: For seamless deployment and hosting.
+- **No structured methodology**: Most founders jump from idea to execution without validation, business model definition, or competitive analysis.
+- **No Algeria-specific legal guidance**: Understanding SARL registration, NIF/NIS procedures, CNRC filing, and startup incentive programs requires navigating opaque official sources.
+- **No AI co-pilot in context**: General-purpose chatbots lack the structure, memory, and domain framing to act as a startup advisor. They don't know your roadmap, your BMC, your competitors, or your financial plan.
+- **Fragmented tooling**: A founder today uses Notion for docs, ChatGPT for ideas, Excel for financials, and Google for legal info — with no thread connecting them.
 
-## Outcome
+Startopsy addresses all four with a single integrated platform.
 
-Startopsy provides a comprehensive solution for startups looking to track their growth metrics and gain actionable insights, all through a clean and intuitive web interface.
+## Product Features 
+
+The platform is organized around a sidebar-driven app shell with the following modules:
+
+- **Startup Diagnostic**: The entry point. A structured form that collects the startup's core information. This becomes the "context nucleus" — every AI feature reads from it to stay grounded in the user's specific startup.
+- **AI Co-founder Chat**: A persistent conversational AI interface that behaves as a startup co-founder, having access to the startup's diagnostic data and maintaining conversation history.
+- **Business Model Canvas (BMC) Generator**: Automatically generates all nine BMC segments using the startup's diagnostic data as input.
+- **Competitor Analysis**: Takes the startup's sector, value proposition, and market to identify and profile relevant competitors.
+- **Financial Plan Generator**: Produces a structured financial projection grounded in the startup's declared business model and stage.
+- **Investor Matching**: Produces a curated list of relevant investors (angel investors, VCs, accelerators) with match reasoning for each.
+- **Legal-DZ Module**: A dedicated Algeria-specific legal guidance feature providing structured answers on Algerian startup legal structures, registration procedures, tax obligations, and government programs.
+- **Market Validation**: AI-assisted market sizing, TAM/SAM/SOM estimation, and demand signal analysis.
+- **Customer Validation**: A framework for structuring customer discovery.
+- **Startup Roadmap**: A phased, AI-generated action plan that breaks the startup's journey into concrete milestones.
+- **Pre-Mortem Analysis**: An anticipatory risk framework where the AI assumes the startup has failed 12 months from now and works backwards to identify the most likely causes.
+- **Pitch Deck Builder**: Generates a structured pitch deck outline grounded in the startup's data.
+- **Document Management & Dashboard**: Stores generated outputs as referenceable documents and provides an overview of the startup's current state.
+
+## Technical Architecture
+
+**Stack:**
+- **Frontend**: Next.js 14
+- **Backend & AI**: NestJS, FastAPI, LangChain
+- **Architecture**: Microservices, CI/CD, Docker
+- **Styling**: Tailwind CSS, shadcn/ui
+- **Auth**: NextAuth.js
+- **ORM & Database**: Prisma, PostgreSQL
+
+**Data Flow Pattern:**
+Every feature follows the same pattern: a Server Action handles data access and AI calls server-side, a page component fetches initial data using the Server Action, and a client component handles interactive UI state. This keeps sensitive logic on the server while keeping the UI responsive.
+
+## What Makes This Project Stand Out
+
+1. **Algeria-first positioning**: The Legal-DZ module and the general framing around the Algerian startup context is a genuine differentiator.
+2. **Structured context as a foundation**: Every AI feature is grounded in the startup profile. It's what separates a tool from a toy.
+3. **Full vertical coverage**: The platform covers the entire early-stage startup lifecycle in one place.
+4. **Production-ready code quality**: The codebase shows consistent patterns, proper separation of concerns, TypeScript throughout, and a complete design system.

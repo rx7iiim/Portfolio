@@ -253,6 +253,27 @@ export default function Home() {
                         </Button>
                       ))}
                     </Row>
+                    {project.images && project.images.length > 0 && (
+                      <Row fillWidth paddingTop="m" gap="12" wrap>
+                        {project.images.map((image, index) => (
+                          <Row
+                            key={index}
+                            border="neutral-medium"
+                            radius="m"
+                            minWidth={image.width}
+                            height={image.height}
+                          >
+                            <Media
+                              enlarge
+                              radius="m"
+                              sizes={image.width.toString()}
+                              alt={image.alt}
+                              src={image.src}
+                            />
+                          </Row>
+                        ))}
+                      </Row>
+                    )}
                   </Column>
                 ))}
               </Column>
