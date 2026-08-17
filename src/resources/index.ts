@@ -1,4 +1,3 @@
-// import a pre-defined template for config and content options
 export {
   person,
   social,
@@ -7,7 +6,6 @@ export {
   about,
   blog,
   work,
-  gallery,
 } from "./content";
 
 export {
